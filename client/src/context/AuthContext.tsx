@@ -1,6 +1,13 @@
-import { createContext, useState, useContext, ReactNode } from "react";
+import { createContext, useState, useContext, ReactNode, useEffect } from "react";
 import { Professional, Clinic, User } from "@/types";
 import { useLocation } from "wouter";
+import { apiRequest } from "@/lib/queryClient";
+
+interface AuthResponse {
+  user: User;
+  professional: Professional | null;
+  clinic: Clinic | null;
+}
 
 interface AuthContextType {
   user: User | null;
@@ -14,65 +21,76 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // Start with loading to check auth
   const [error, setError] = useState<string | null>(null);
   const [_, setLocation] = useLocation();
 
-  // Mock login function
+  // Check if user is already logged in
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const response = await apiRequest<AuthResponse>("/api/auth/me", { method: "GET" });
+        if (response) {
+          const userData = {
+            ...response.user,
+            professional: response.professional,
+            clinic: response.clinic
+          };
+          setUser(userData);
+        }
+      } catch (err) {
+        // Not authenticated, that's ok
+        console.log("User not authenticated yet");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkAuth();
+  }, []);
+
+  // Login function that calls the API
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     setError(null);
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const response = await apiRequest<AuthResponse>("/api/auth/login", {
+        method: "POST",
+        body: JSON.stringify({ email, password }),
+        headers: {
+          "Content-Type": "application/json"
+        }
+      });
       
-      // Sample validation
-      if (email === "admin@ilivehealth.com" && password === "password") {
-        // Mock admin user
-        const mockProfessional: Professional = {
-          id: "1",
-          name: "Dra. Ana Silva",
-          specialty: "Dermatologista",
-          email: "ana.silva@ilivehealth.com",
-          profileImage: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100"
+      if (response) {
+        const userData = {
+          ...response.user,
+          professional: response.professional,
+          clinic: response.clinic
         };
         
-        const mockClinic: Clinic = {
-          id: "1",
-          name: "Clínica Bem Estar",
-          address: {
-            street: "Av. Paulista",
-            number: "1000",
-            city: "São Paulo",
-            state: "SP",
-            zipCode: "01310-100"
-          }
-        };
-        
-        setUser({
-          id: "1",
-          name: "Dra. Ana Silva",
-          email: email,
-          role: "professional",
-          professional: mockProfessional,
-          clinic: mockClinic
-        });
-        
+        setUser(userData);
         setLocation("/dashboard");
       } else {
-        throw new Error("Credenciais inválidas");
+        throw new Error("Falha ao fazer login");
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao fazer login");
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Credenciais inválidas");
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
+  // Logout function
   const logout = () => {
     setUser(null);
     setLocation("/login");
+    // Add API call to logout if needed
   };
 
   return (

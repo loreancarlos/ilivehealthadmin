@@ -123,6 +123,62 @@ export class MemStorage implements IStorage {
   }
 
   private initializeSampleData() {
+    // Initialize sample admin user
+    this.createUser({
+      username: "admin",
+      password: "password",
+      name: "Admin User",
+      email: "admin@ilivehealth.com",
+      role: "admin",
+      profileImage: "https://randomuser.me/api/portraits/men/1.jpg"
+    });
+
+    // Create a sample professional
+    this.createUser({
+      username: "dra.silva",
+      password: "password",
+      name: "Dra. Ana Silva",
+      email: "ana.silva@ilivehealth.com",
+      role: "professional",
+      profileImage: "https://randomuser.me/api/portraits/women/2.jpg"
+    }).then(user => {
+      this.createProfessional({
+        userId: user.id,
+        name: "Dra. Ana Silva",
+        specialty: "Dermatologista",
+        bio: "Especialista em tratamentos estéticos e dermatologia clínica",
+        registrationNumber: "CRM-12345",
+        phoneNumber: "(11) 99999-9999",
+        email: "ana.silva@ilivehealth.com",
+        profileImage: "https://randomuser.me/api/portraits/women/2.jpg"
+      });
+    });
+
+    // Create a sample clinic
+    this.createClinic({
+      name: "Clínica Bem Estar",
+      email: "contato@clinicabemestar.com",
+      phoneNumber: "(11) 3333-3333",
+      description: "Clínica especializada em estética e bem-estar",
+      address: {
+        street: "Av. Paulista",
+        number: "1000",
+        complement: "Sala 123",
+        neighborhood: "Bela Vista",
+        city: "São Paulo",
+        state: "SP",
+        zipCode: "01310-100"
+      },
+      logo: "https://images.unsplash.com/photo-1629909613654-28e377c37b09?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&h=200",
+      openingHours: [
+        { weekdays: "Segunda à Sexta", hours: "8:00 - 20:00" },
+        { weekdays: "Sábado", hours: "9:00 - 15:00" }
+      ],
+      isOpen: true,
+      rating: 4,
+      reviewCount: 120
+    });
+
     // Initialize service categories
     const categories = [
       { name: "Consultas", slug: "consultations", description: "Consultas médicas e avaliações" },
