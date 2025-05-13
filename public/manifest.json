@@ -1,9 +1,9 @@
 {
-  "name": "iLiveHealth",
+  "name": "iLiveHealth Admin",
   "theme_color": "#000000",
   "background_color": "#ffffff",
   "short_name": "iLiveHealth",
-  "start_url": "https://ilivehealth.vercel.app",
+  "start_url": "https://ilivehealthadmin.vercel.app",
   "lang": "pt",
   "display_override": [
   "window-controls-overlay",
@@ -11,7 +11,7 @@
   "browser"
   ],
   "display": "standalone",
-  "description": "A iLiveHealth é uma plataforma digital brasileira de agendamento e contratação de serviços de saúde e beleza, que conecta clientes, clinicas e profissionais.",
+  "description": "Painel administrativo iLiveHealth para gerenciamento de clínicas, profissionais, agendamentos e serviços.",
   "categories": [
     "business",
     "productivity",
