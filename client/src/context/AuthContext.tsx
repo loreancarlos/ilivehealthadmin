@@ -29,7 +29,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await apiRequest<AuthResponse>("/api/auth/me", { method: "GET" });
+        const response = await apiRequest<AuthResponse>("/api/auth/me");
         if (response) {
           const userData = {
             ...response.user,
