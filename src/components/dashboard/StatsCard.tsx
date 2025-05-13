@@ -1,5 +1,5 @@
-import { Statistic } from "@/types";
-import { formatCurrency } from "@/lib/utils";
+import { Statistic } from "../../types";
+import { formatCurrency } from "../../lib/utils";
 
 interface StatsCardProps {
   stat: Statistic;

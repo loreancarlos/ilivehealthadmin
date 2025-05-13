@@ -1,17 +1,37 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { CalendarDays, BarChart3, LineChart, Clipboard, Download, Filter, Search, ChevronDown } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
+import {
+  CalendarDays,
+  BarChart3,
+  LineChart,
+  Clipboard,
+  Download,
+  Filter,
+  Search,
+  ChevronDown,
+} from "lucide-react";
+import { Button } from "../../components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../../components/ui/card";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "../../components/ui/tabs";
+import { Input } from "../../components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "../../components/ui/select";
 import {
   BarChart,
   Bar,
@@ -27,23 +47,27 @@ import {
   Cell,
   Legend,
 } from "recharts";
-import { weeklyRevenueData, servicesPieChartData, statistics } from "@/data/mockData";
-import { formatCurrency } from "@/lib/utils";
+import {
+  weeklyRevenueData,
+  servicesPieChartData,
+  statistics,
+} from "../../data/mockData";
+import { formatCurrency } from "../../lib/utils";
 
 // Mock data for reports
 const monthlyRevenueData = [
-  { month: 'Jan', revenue: 15000, appointments: 85 },
-  { month: 'Fev', revenue: 17500, appointments: 95 },
-  { month: 'Mar', revenue: 16800, appointments: 90 },
-  { month: 'Abr', revenue: 18200, appointments: 102 },
-  { month: 'Mai', revenue: 19500, appointments: 110 },
-  { month: 'Jun', revenue: 21300, appointments: 125 },
-  { month: 'Jul', revenue: 20500, appointments: 118 },
-  { month: 'Ago', revenue: 22000, appointments: 128 },
-  { month: 'Set', revenue: 23800, appointments: 135 },
-  { month: 'Out', revenue: 24600, appointments: 140 },
-  { month: 'Nov', revenue: 25780, appointments: 145 },
-  { month: 'Dez', revenue: 0, appointments: 0 },
+  { month: "Jan", revenue: 15000, appointments: 85 },
+  { month: "Fev", revenue: 17500, appointments: 95 },
+  { month: "Mar", revenue: 16800, appointments: 90 },
+  { month: "Abr", revenue: 18200, appointments: 102 },
+  { month: "Mai", revenue: 19500, appointments: 110 },
+  { month: "Jun", revenue: 21300, appointments: 125 },
+  { month: "Jul", revenue: 20500, appointments: 118 },
+  { month: "Ago", revenue: 22000, appointments: 128 },
+  { month: "Set", revenue: 23800, appointments: 135 },
+  { month: "Out", revenue: 24600, appointments: 140 },
+  { month: "Nov", revenue: 25780, appointments: 145 },
+  { month: "Dez", revenue: 0, appointments: 0 },
 ];
 
 const professionalPerformanceData = [
@@ -60,7 +84,7 @@ const servicePerformanceData = [
 ];
 
 // Colors for charts
-const COLORS = ['#0088ff', '#3a7bfd', '#00d861', '#ff4545', '#9d70ff'];
+const COLORS = ["#0088ff", "#3a7bfd", "#00d861", "#ff4545", "#9d70ff"];
 
 const Reports = () => {
   const [selectedPeriod, setSelectedPeriod] = useState<string>("month");
@@ -79,7 +103,9 @@ const Reports = () => {
             <p key={index} className="text-sm" style={{ color: item.color }}>
               {item.name === "revenue"
                 ? `Receita: ${formatCurrency(item.value)}`
-                : `${item.name === "appointments" ? "Agendamentos" : item.name}: ${item.value}`}
+                : `${
+                    item.name === "appointments" ? "Agendamentos" : item.name
+                  }: ${item.value}`}
             </p>
           ))}
         </div>
@@ -99,9 +125,11 @@ const Reports = () => {
       <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h2 className="text-xl font-semibold text-gray-900">Relatórios</h2>
-          <p className="text-sm text-gray-500">Análise de desempenho e métricas da clínica</p>
+          <p className="text-sm text-gray-500">
+            Análise de desempenho e métricas da clínica
+          </p>
         </div>
-        
+
         <div className="flex items-center space-x-2">
           <Button variant="outline" className="border-gray-300">
             <Clipboard className="h-4 w-4 mr-2" />
@@ -113,17 +141,16 @@ const Reports = () => {
           </Button>
         </div>
       </div>
-      
+
       {/* Date Selection and Filters */}
       <Card className="mb-6">
         <CardContent className="p-4 space-y-4">
           <div className="flex flex-col sm:flex-row justify-between gap-4">
             <div className="w-full sm:w-auto">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Período</label>
-              <Select 
-                value={selectedPeriod} 
-                onValueChange={handlePeriodChange}
-              >
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Período
+              </label>
+              <Select value={selectedPeriod} onValueChange={handlePeriodChange}>
                 <SelectTrigger className="w-full sm:w-[240px]">
                   <SelectValue placeholder="Selecione um período" />
                 </SelectTrigger>
@@ -136,28 +163,32 @@ const Reports = () => {
                 </SelectContent>
               </Select>
             </div>
-            
+
             {isCustomDate && (
               <div className="flex flex-col sm:flex-row gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Data inicial</label>
-                  <Input 
-                    type="date" 
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Data inicial
+                  </label>
+                  <Input
+                    type="date"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Data final</label>
-                  <Input 
-                    type="date" 
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Data final
+                  </label>
+                  <Input
+                    type="date"
                     value={endDate}
                     onChange={(e) => setEndDate(e.target.value)}
                   />
                 </div>
               </div>
             )}
-            
+
             <div className="sm:self-end">
               <Button disabled={isCustomDate && (!startDate || !endDate)}>
                 Aplicar
@@ -166,14 +197,13 @@ const Reports = () => {
           </div>
         </CardContent>
       </Card>
-      
+
       {/* Report Type Tabs */}
-      <Tabs 
-        defaultValue="financial" 
-        value={selectedReport} 
+      <Tabs
+        defaultValue="financial"
+        value={selectedReport}
         onValueChange={setSelectedReport}
-        className="mb-6"
-      >
+        className="mb-6">
         <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
           <TabsTrigger value="financial">
             <BarChart3 className="h-4 w-4 mr-2" />
@@ -192,51 +222,62 @@ const Reports = () => {
             Serviços
           </TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="financial" className="mt-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
             {[
-              { 
-                label: "Receita Total", 
-                value: formatCurrency(statistics[1].value), 
-                change: `${statistics[1].change > 0 ? '+' : ''}${statistics[1].change}%`, 
-                icon: <BarChart3 className="h-5 w-5 text-primary" /> 
+              {
+                label: "Receita Total",
+                value: formatCurrency(statistics[1].value),
+                change: `${statistics[1].change > 0 ? "+" : ""}${
+                  statistics[1].change
+                }%`,
+                icon: <BarChart3 className="h-5 w-5 text-primary" />,
               },
-              { 
-                label: "Ticket Médio", 
-                value: formatCurrency(172.07), 
-                change: "+4.2%", 
-                icon: <LineChart className="h-5 w-5 text-green-500" /> 
+              {
+                label: "Ticket Médio",
+                value: formatCurrency(172.07),
+                change: "+4.2%",
+                icon: <LineChart className="h-5 w-5 text-green-500" />,
               },
-              { 
-                label: "Taxa de Cancelamento", 
-                value: "7.8%", 
-                change: "-1.2%", 
-                icon: <Clipboard className="h-5 w-5 text-yellow-500" /> 
-              }
+              {
+                label: "Taxa de Cancelamento",
+                value: "7.8%",
+                change: "-1.2%",
+                icon: <Clipboard className="h-5 w-5 text-yellow-500" />,
+              },
             ].map((stat, i) => (
               <Card key={i}>
                 <CardHeader className="pb-2">
                   <div className="flex justify-between">
-                    <CardTitle className="text-sm font-medium text-gray-500">{stat.label}</CardTitle>
+                    <CardTitle className="text-sm font-medium text-gray-500">
+                      {stat.label}
+                    </CardTitle>
                     {stat.icon}
                   </div>
                 </CardHeader>
                 <CardContent>
                   <p className="text-2xl font-bold">{stat.value}</p>
-                  <p className={`text-sm ${stat.change.includes('+') ? 'text-green-500' : 'text-red-500'}`}>
+                  <p
+                    className={`text-sm ${
+                      stat.change.includes("+")
+                        ? "text-green-500"
+                        : "text-red-500"
+                    }`}>
                     {stat.change} vs período anterior
                   </p>
                 </CardContent>
               </Card>
             ))}
           </div>
-          
+
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
             <Card className="lg:col-span-2">
               <CardHeader>
                 <CardTitle>Receita Mensal</CardTitle>
-                <CardDescription>Evolução da receita ao longo do ano</CardDescription>
+                <CardDescription>
+                  Evolução da receita ao longo do ano
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="h-80">
@@ -248,24 +289,23 @@ const Reports = () => {
                         right: 30,
                         left: 0,
                         bottom: 10,
-                      }}
-                    >
+                      }}>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                      <XAxis 
-                        dataKey="month" 
+                      <XAxis
+                        dataKey="month"
                         axisLine={false}
                         tickLine={false}
                       />
-                      <YAxis 
+                      <YAxis
                         axisLine={false}
                         tickLine={false}
                         tickFormatter={(value) => `R$${value / 1000}k`}
                       />
                       <Tooltip content={<CustomTooltip />} />
-                      <Bar 
+                      <Bar
                         name="revenue"
-                        dataKey="revenue" 
-                        fill="#0088ff" 
+                        dataKey="revenue"
+                        fill="#0088ff"
                         radius={[4, 4, 0, 0]}
                       />
                     </BarChart>
@@ -273,11 +313,13 @@ const Reports = () => {
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardHeader>
                 <CardTitle>Distribuição de Receita</CardTitle>
-                <CardDescription>Receita por categoria de serviço</CardDescription>
+                <CardDescription>
+                  Receita por categoria de serviço
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="h-60">
@@ -290,10 +332,12 @@ const Reports = () => {
                         labelLine={false}
                         outerRadius={80}
                         dataKey="value"
-                        nameKey="name"
-                      >
+                        nameKey="name">
                         {servicesPieChartData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={COLORS[index % COLORS.length]}
+                          />
                         ))}
                       </Pie>
                       <Tooltip />
@@ -302,12 +346,15 @@ const Reports = () => {
                 </div>
                 <div className="mt-4 space-y-2">
                   {servicesPieChartData.map((entry, index) => (
-                    <div key={entry.name} className="flex items-center justify-between">
+                    <div
+                      key={entry.name}
+                      className="flex items-center justify-between">
                       <div className="flex items-center">
-                        <div 
-                          className="w-3 h-3 rounded-full mr-2" 
-                          style={{ backgroundColor: COLORS[index % COLORS.length] }}
-                        ></div>
+                        <div
+                          className="w-3 h-3 rounded-full mr-2"
+                          style={{
+                            backgroundColor: COLORS[index % COLORS.length],
+                          }}></div>
                         <span className="text-sm">{entry.name}</span>
                       </div>
                       <span className="font-medium">{entry.value}%</span>
@@ -317,7 +364,7 @@ const Reports = () => {
               </CardContent>
             </Card>
           </div>
-          
+
           <Card>
             <CardHeader>
               <CardTitle>Desempenho Financeiro por Profissional</CardTitle>
@@ -327,45 +374,89 @@ const Reports = () => {
                 <table className="w-full">
                   <thead>
                     <tr>
-                      <th className="text-left p-3 bg-gray-50 text-xs font-medium text-gray-500 uppercase">Profissional</th>
-                      <th className="text-left p-3 bg-gray-50 text-xs font-medium text-gray-500 uppercase">Atendimentos</th>
-                      <th className="text-left p-3 bg-gray-50 text-xs font-medium text-gray-500 uppercase">Receita</th>
-                      <th className="text-left p-3 bg-gray-50 text-xs font-medium text-gray-500 uppercase">Ticket Médio</th>
-                      <th className="text-left p-3 bg-gray-50 text-xs font-medium text-gray-500 uppercase">% do Total</th>
+                      <th className="text-left p-3 bg-gray-50 text-xs font-medium text-gray-500 uppercase">
+                        Profissional
+                      </th>
+                      <th className="text-left p-3 bg-gray-50 text-xs font-medium text-gray-500 uppercase">
+                        Atendimentos
+                      </th>
+                      <th className="text-left p-3 bg-gray-50 text-xs font-medium text-gray-500 uppercase">
+                        Receita
+                      </th>
+                      <th className="text-left p-3 bg-gray-50 text-xs font-medium text-gray-500 uppercase">
+                        Ticket Médio
+                      </th>
+                      <th className="text-left p-3 bg-gray-50 text-xs font-medium text-gray-500 uppercase">
+                        % do Total
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
                     {professionalPerformanceData.map((professional, index) => {
-                      const totalRevenue = professionalPerformanceData.reduce((sum, p) => sum + p.revenue, 0);
-                      const percentage = Math.round((professional.revenue / totalRevenue) * 100);
-                      const ticketAverage = professional.revenue / professional.appointments;
-                      
+                      const totalRevenue = professionalPerformanceData.reduce(
+                        (sum, p) => sum + p.revenue,
+                        0
+                      );
+                      const percentage = Math.round(
+                        (professional.revenue / totalRevenue) * 100
+                      );
+                      const ticketAverage =
+                        professional.revenue / professional.appointments;
+
                       return (
                         <tr key={index} className="hover:bg-gray-50">
-                          <td className="p-3 text-sm text-gray-900">{professional.name}</td>
-                          <td className="p-3 text-sm text-gray-900">{professional.appointments}</td>
-                          <td className="p-3 text-sm font-medium text-gray-900">{formatCurrency(professional.revenue)}</td>
-                          <td className="p-3 text-sm text-gray-900">{formatCurrency(ticketAverage)}</td>
-                          <td className="p-3 text-sm text-gray-900">{percentage}%</td>
+                          <td className="p-3 text-sm text-gray-900">
+                            {professional.name}
+                          </td>
+                          <td className="p-3 text-sm text-gray-900">
+                            {professional.appointments}
+                          </td>
+                          <td className="p-3 text-sm font-medium text-gray-900">
+                            {formatCurrency(professional.revenue)}
+                          </td>
+                          <td className="p-3 text-sm text-gray-900">
+                            {formatCurrency(ticketAverage)}
+                          </td>
+                          <td className="p-3 text-sm text-gray-900">
+                            {percentage}%
+                          </td>
                         </tr>
                       );
                     })}
-                    
+
                     <tr className="bg-gray-50">
-                      <td className="p-3 text-sm font-medium text-gray-900">Total</td>
                       <td className="p-3 text-sm font-medium text-gray-900">
-                        {professionalPerformanceData.reduce((sum, p) => sum + p.appointments, 0)}
+                        Total
                       </td>
                       <td className="p-3 text-sm font-medium text-gray-900">
-                        {formatCurrency(professionalPerformanceData.reduce((sum, p) => sum + p.revenue, 0))}
+                        {professionalPerformanceData.reduce(
+                          (sum, p) => sum + p.appointments,
+                          0
+                        )}
                       </td>
                       <td className="p-3 text-sm font-medium text-gray-900">
                         {formatCurrency(
-                          professionalPerformanceData.reduce((sum, p) => sum + p.revenue, 0) / 
-                          professionalPerformanceData.reduce((sum, p) => sum + p.appointments, 0)
+                          professionalPerformanceData.reduce(
+                            (sum, p) => sum + p.revenue,
+                            0
+                          )
                         )}
                       </td>
-                      <td className="p-3 text-sm font-medium text-gray-900">100%</td>
+                      <td className="p-3 text-sm font-medium text-gray-900">
+                        {formatCurrency(
+                          professionalPerformanceData.reduce(
+                            (sum, p) => sum + p.revenue,
+                            0
+                          ) /
+                            professionalPerformanceData.reduce(
+                              (sum, p) => sum + p.appointments,
+                              0
+                            )
+                        )}
+                      </td>
+                      <td className="p-3 text-sm font-medium text-gray-900">
+                        100%
+                      </td>
                     </tr>
                   </tbody>
                 </table>
@@ -373,51 +464,64 @@ const Reports = () => {
             </CardContent>
           </Card>
         </TabsContent>
-        
+
         <TabsContent value="appointments" className="mt-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
             {[
-              { 
-                label: "Total de Agendamentos", 
-                value: statistics[0].value, 
-                change: `${statistics[0].change > 0 ? '+' : ''}${statistics[0].change}%`, 
-                icon: <CalendarDays className="h-5 w-5 text-primary" /> 
+              {
+                label: "Total de Agendamentos",
+                value: statistics[0].value,
+                change: `${statistics[0].change > 0 ? "+" : ""}${
+                  statistics[0].change
+                }%`,
+                icon: <CalendarDays className="h-5 w-5 text-primary" />,
               },
-              { 
-                label: "Taxa de Conversão", 
-                value: `${statistics[3].value}%`, 
-                change: `${statistics[3].change > 0 ? '+' : ''}${statistics[3].change}%`, 
-                icon: <LineChart className="h-5 w-5 text-purple-500" /> 
+              {
+                label: "Taxa de Conversão",
+                value: `${statistics[3].value}%`,
+                change: `${statistics[3].change > 0 ? "+" : ""}${
+                  statistics[3].change
+                }%`,
+                icon: <LineChart className="h-5 w-5 text-purple-500" />,
               },
-              { 
-                label: "Taxa de Ocupação", 
-                value: "78.5%", 
-                change: "+3.2%", 
-                icon: <BarChart3 className="h-5 w-5 text-green-500" /> 
-              }
+              {
+                label: "Taxa de Ocupação",
+                value: "78.5%",
+                change: "+3.2%",
+                icon: <BarChart3 className="h-5 w-5 text-green-500" />,
+              },
             ].map((stat, i) => (
               <Card key={i}>
                 <CardHeader className="pb-2">
                   <div className="flex justify-between">
-                    <CardTitle className="text-sm font-medium text-gray-500">{stat.label}</CardTitle>
+                    <CardTitle className="text-sm font-medium text-gray-500">
+                      {stat.label}
+                    </CardTitle>
                     {stat.icon}
                   </div>
                 </CardHeader>
                 <CardContent>
                   <p className="text-2xl font-bold">{stat.value}</p>
-                  <p className={`text-sm ${stat.change.includes('+') ? 'text-green-500' : 'text-red-500'}`}>
+                  <p
+                    className={`text-sm ${
+                      stat.change.includes("+")
+                        ? "text-green-500"
+                        : "text-red-500"
+                    }`}>
                     {stat.change} vs período anterior
                   </p>
                 </CardContent>
               </Card>
             ))}
           </div>
-          
+
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
             <Card className="lg:col-span-2">
               <CardHeader>
                 <CardTitle>Evolução de Agendamentos</CardTitle>
-                <CardDescription>Quantidade de agendamentos por mês</CardDescription>
+                <CardDescription>
+                  Quantidade de agendamentos por mês
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="h-80">
@@ -429,24 +533,20 @@ const Reports = () => {
                         right: 30,
                         left: 0,
                         bottom: 10,
-                      }}
-                    >
+                      }}>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                      <XAxis 
-                        dataKey="month" 
+                      <XAxis
+                        dataKey="month"
                         axisLine={false}
                         tickLine={false}
                       />
-                      <YAxis 
-                        axisLine={false}
-                        tickLine={false}
-                      />
+                      <YAxis axisLine={false} tickLine={false} />
                       <Tooltip content={<CustomTooltip />} />
-                      <Line 
+                      <Line
                         name="appointments"
-                        type="monotone" 
-                        dataKey="appointments" 
-                        stroke="#3a7bfd" 
+                        type="monotone"
+                        dataKey="appointments"
+                        stroke="#3a7bfd"
                         dot={{ r: 4 }}
                         activeDot={{ r: 6 }}
                       />
@@ -455,7 +555,7 @@ const Reports = () => {
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardHeader>
                 <CardTitle>Status dos Agendamentos</CardTitle>
@@ -470,22 +570,24 @@ const Reports = () => {
                           { name: "Confirmados", value: 65 },
                           { name: "Concluídos", value: 20 },
                           { name: "Cancelados", value: 10 },
-                          { name: "Não Compareceu", value: 5 }
+                          { name: "Não Compareceu", value: 5 },
                         ]}
                         cx="50%"
                         cy="50%"
                         labelLine={false}
                         outerRadius={80}
                         dataKey="value"
-                        nameKey="name"
-                      >
+                        nameKey="name">
                         {[
                           { name: "Confirmados", value: 65 },
                           { name: "Concluídos", value: 20 },
                           { name: "Cancelados", value: 10 },
-                          { name: "Não Compareceu", value: 5 }
+                          { name: "Não Compareceu", value: 5 },
                         ].map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={COLORS[index % COLORS.length]}
+                          />
                         ))}
                       </Pie>
                       <Tooltip />
@@ -497,14 +599,17 @@ const Reports = () => {
                     { name: "Confirmados", value: 65 },
                     { name: "Concluídos", value: 20 },
                     { name: "Cancelados", value: 10 },
-                    { name: "Não Compareceu", value: 5 }
+                    { name: "Não Compareceu", value: 5 },
                   ].map((entry, index) => (
-                    <div key={entry.name} className="flex items-center justify-between">
+                    <div
+                      key={entry.name}
+                      className="flex items-center justify-between">
                       <div className="flex items-center">
-                        <div 
-                          className="w-3 h-3 rounded-full mr-2" 
-                          style={{ backgroundColor: COLORS[index % COLORS.length] }}
-                        ></div>
+                        <div
+                          className="w-3 h-3 rounded-full mr-2"
+                          style={{
+                            backgroundColor: COLORS[index % COLORS.length],
+                          }}></div>
                         <span className="text-sm">{entry.name}</span>
                       </div>
                       <span className="font-medium">{entry.value}%</span>
@@ -514,12 +619,14 @@ const Reports = () => {
               </CardContent>
             </Card>
           </div>
-          
+
           <Card>
             <CardHeader className="flex flex-col md:flex-row justify-between items-start md:items-center">
               <div>
                 <CardTitle>Agendamentos por Dia da Semana</CardTitle>
-                <CardDescription>Distribuição de agendamentos pela semana</CardDescription>
+                <CardDescription>
+                  Distribuição de agendamentos pela semana
+                </CardDescription>
               </div>
               <div className="mt-2 md:mt-0">
                 <Select defaultValue="all">
@@ -553,16 +660,15 @@ const Reports = () => {
                       right: 30,
                       left: 0,
                       bottom: 10,
-                    }}
-                  >
+                    }}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} />
                     <XAxis dataKey="day" axisLine={false} tickLine={false} />
                     <YAxis axisLine={false} tickLine={false} />
                     <Tooltip />
-                    <Bar 
+                    <Bar
                       name="Agendamentos"
-                      dataKey="count" 
-                      fill="#0088ff" 
+                      dataKey="count"
+                      fill="#0088ff"
                       radius={[4, 4, 0, 0]}
                     />
                   </BarChart>
@@ -571,13 +677,15 @@ const Reports = () => {
             </CardContent>
           </Card>
         </TabsContent>
-        
+
         <TabsContent value="professionals" className="mt-4">
           <Card className="mb-6">
             <CardHeader className="flex flex-col md:flex-row justify-between items-start md:items-center">
               <div>
                 <CardTitle>Desempenho de Profissionais</CardTitle>
-                <CardDescription>Comparativo entre profissionais</CardDescription>
+                <CardDescription>
+                  Comparativo entre profissionais
+                </CardDescription>
               </div>
               <div className="mt-2 md:mt-0 flex gap-2">
                 <Select defaultValue="appointments">
@@ -603,72 +711,84 @@ const Reports = () => {
                       right: 30,
                       left: 100,
                       bottom: 10,
-                    }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
+                    }}>
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      horizontal={true}
+                      vertical={false}
+                    />
                     <XAxis type="number" axisLine={false} tickLine={false} />
-                    <YAxis 
-                      type="category" 
-                      dataKey="name" 
-                      axisLine={false} 
-                      tickLine={false} 
+                    <YAxis
+                      type="category"
+                      dataKey="name"
+                      axisLine={false}
+                      tickLine={false}
                     />
                     <Tooltip content={<CustomTooltip />} />
-                    <Bar 
+                    <Bar
                       name="appointments"
-                      dataKey="appointments" 
-                      fill="#0088ff" 
-                      radius={[0, 4, 4, 0]} 
+                      dataKey="appointments"
+                      fill="#0088ff"
+                      radius={[0, 4, 4, 0]}
                     />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
             </CardContent>
           </Card>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
                 <CardTitle>Taxa de Conversão por Profissional</CardTitle>
-                <CardDescription>Porcentagem de consultas agendadas vs. realizadas</CardDescription>
+                <CardDescription>
+                  Porcentagem de consultas agendadas vs. realizadas
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-6">
                   {[
                     { name: "Dra. Ana Silva", rate: 92 },
                     { name: "Dr. Marcos Oliveira", rate: 88 },
-                    { name: "Dra. Paula Santos", rate: 95 }
+                    { name: "Dra. Paula Santos", rate: 95 },
                   ].map((professional, index) => (
                     <div key={index}>
                       <div className="flex justify-between mb-1">
-                        <span className="text-sm font-medium">{professional.name}</span>
-                        <span className="text-sm font-medium">{professional.rate}%</span>
+                        <span className="text-sm font-medium">
+                          {professional.name}
+                        </span>
+                        <span className="text-sm font-medium">
+                          {professional.rate}%
+                        </span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2.5">
-                        <div 
-                          className="bg-primary h-2.5 rounded-full" 
-                          style={{ width: `${professional.rate}%` }}
-                        ></div>
+                        <div
+                          className="bg-primary h-2.5 rounded-full"
+                          style={{ width: `${professional.rate}%` }}></div>
                       </div>
                     </div>
                   ))}
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardHeader>
                 <CardTitle>Avaliação de Satisfação</CardTitle>
-                <CardDescription>Média de avaliações por profissional</CardDescription>
+                <CardDescription>
+                  Média de avaliações por profissional
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-6">
                   {[
                     { name: "Dra. Ana Silva", rating: 4.8, reviews: 124 },
                     { name: "Dr. Marcos Oliveira", rating: 4.6, reviews: 98 },
-                    { name: "Dra. Paula Santos", rating: 4.9, reviews: 87 }
+                    { name: "Dra. Paula Santos", rating: 4.9, reviews: 87 },
                   ].map((professional, index) => (
-                    <div key={index} className="flex items-center justify-between">
+                    <div
+                      key={index}
+                      className="flex items-center justify-between">
                       <div>
                         <p className="font-medium">{professional.name}</p>
                         <div className="flex items-center mt-1">
@@ -684,8 +804,7 @@ const Reports = () => {
                                     : "text-gray-300"
                                 }`}
                                 fill="currentColor"
-                                viewBox="0 0 20 20"
-                              >
+                                viewBox="0 0 20 20">
                                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118l-2.8-2.034c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                               </svg>
                             ))}
@@ -695,7 +814,9 @@ const Reports = () => {
                           </span>
                         </div>
                       </div>
-                      <div className="text-2xl font-bold">{professional.rating}</div>
+                      <div className="text-2xl font-bold">
+                        {professional.rating}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -703,13 +824,15 @@ const Reports = () => {
             </Card>
           </div>
         </TabsContent>
-        
+
         <TabsContent value="services" className="mt-4">
           <Card className="mb-6">
             <CardHeader className="flex flex-col md:flex-row justify-between items-start md:items-center">
               <div>
                 <CardTitle>Serviços Mais Populares</CardTitle>
-                <CardDescription>Serviços com maior número de agendamentos</CardDescription>
+                <CardDescription>
+                  Serviços com maior número de agendamentos
+                </CardDescription>
               </div>
               <div className="mt-2 md:mt-0">
                 <Select defaultValue="appointments">
@@ -734,54 +857,61 @@ const Reports = () => {
                       right: 30,
                       left: 150,
                       bottom: 10,
-                    }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
+                    }}>
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      horizontal={true}
+                      vertical={false}
+                    />
                     <XAxis type="number" axisLine={false} tickLine={false} />
-                    <YAxis 
-                      type="category" 
-                      dataKey="name" 
-                      axisLine={false} 
+                    <YAxis
+                      type="category"
+                      dataKey="name"
+                      axisLine={false}
                       tickLine={false}
                       width={140}
                     />
                     <Tooltip content={<CustomTooltip />} />
-                    <Bar 
+                    <Bar
                       name="count"
-                      dataKey="count" 
-                      fill="#0088ff" 
-                      radius={[0, 4, 4, 0]} 
+                      dataKey="count"
+                      fill="#0088ff"
+                      radius={[0, 4, 4, 0]}
                     />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
             </CardContent>
           </Card>
-          
+
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
                 <CardTitle>Receita por Serviço</CardTitle>
-                <CardDescription>Contribuição de cada serviço para a receita total</CardDescription>
+                <CardDescription>
+                  Contribuição de cada serviço para a receita total
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="h-80">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
-                        data={servicePerformanceData.map(service => ({
+                        data={servicePerformanceData.map((service) => ({
                           name: service.name,
-                          value: service.revenue
+                          value: service.revenue,
                         }))}
                         cx="50%"
                         cy="50%"
                         labelLine={false}
                         outerRadius={80}
                         dataKey="value"
-                        nameKey="name"
-                      >
+                        nameKey="name">
                         {servicePerformanceData.map((_, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={COLORS[index % COLORS.length]}
+                          />
                         ))}
                       </Pie>
                       <Tooltip />
@@ -791,7 +921,7 @@ const Reports = () => {
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardHeader>
                 <CardTitle>Detalhamento por Serviço</CardTitle>
@@ -801,36 +931,69 @@ const Reports = () => {
                   <table className="w-full">
                     <thead>
                       <tr>
-                        <th className="text-left p-3 bg-gray-50 text-xs font-medium text-gray-500 uppercase">Serviço</th>
-                        <th className="text-right p-3 bg-gray-50 text-xs font-medium text-gray-500 uppercase">Agendamentos</th>
-                        <th className="text-right p-3 bg-gray-50 text-xs font-medium text-gray-500 uppercase">Receita</th>
-                        <th className="text-right p-3 bg-gray-50 text-xs font-medium text-gray-500 uppercase">% do Total</th>
+                        <th className="text-left p-3 bg-gray-50 text-xs font-medium text-gray-500 uppercase">
+                          Serviço
+                        </th>
+                        <th className="text-right p-3 bg-gray-50 text-xs font-medium text-gray-500 uppercase">
+                          Agendamentos
+                        </th>
+                        <th className="text-right p-3 bg-gray-50 text-xs font-medium text-gray-500 uppercase">
+                          Receita
+                        </th>
+                        <th className="text-right p-3 bg-gray-50 text-xs font-medium text-gray-500 uppercase">
+                          % do Total
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
                       {servicePerformanceData.map((service, index) => {
-                        const totalRevenue = servicePerformanceData.reduce((sum, s) => sum + s.revenue, 0);
-                        const percentage = Math.round((service.revenue / totalRevenue) * 100);
-                        
+                        const totalRevenue = servicePerformanceData.reduce(
+                          (sum, s) => sum + s.revenue,
+                          0
+                        );
+                        const percentage = Math.round(
+                          (service.revenue / totalRevenue) * 100
+                        );
+
                         return (
                           <tr key={index} className="hover:bg-gray-50">
-                            <td className="p-3 text-sm text-gray-900">{service.name}</td>
-                            <td className="p-3 text-sm text-gray-900 text-right">{service.count}</td>
-                            <td className="p-3 text-sm font-medium text-gray-900 text-right">{formatCurrency(service.revenue)}</td>
-                            <td className="p-3 text-sm text-gray-900 text-right">{percentage}%</td>
+                            <td className="p-3 text-sm text-gray-900">
+                              {service.name}
+                            </td>
+                            <td className="p-3 text-sm text-gray-900 text-right">
+                              {service.count}
+                            </td>
+                            <td className="p-3 text-sm font-medium text-gray-900 text-right">
+                              {formatCurrency(service.revenue)}
+                            </td>
+                            <td className="p-3 text-sm text-gray-900 text-right">
+                              {percentage}%
+                            </td>
                           </tr>
                         );
                       })}
-                      
+
                       <tr className="bg-gray-50">
-                        <td className="p-3 text-sm font-medium text-gray-900">Total</td>
-                        <td className="p-3 text-sm font-medium text-gray-900 text-right">
-                          {servicePerformanceData.reduce((sum, s) => sum + s.count, 0)}
+                        <td className="p-3 text-sm font-medium text-gray-900">
+                          Total
                         </td>
                         <td className="p-3 text-sm font-medium text-gray-900 text-right">
-                          {formatCurrency(servicePerformanceData.reduce((sum, s) => sum + s.revenue, 0))}
+                          {servicePerformanceData.reduce(
+                            (sum, s) => sum + s.count,
+                            0
+                          )}
                         </td>
-                        <td className="p-3 text-sm font-medium text-gray-900 text-right">100%</td>
+                        <td className="p-3 text-sm font-medium text-gray-900 text-right">
+                          {formatCurrency(
+                            servicePerformanceData.reduce(
+                              (sum, s) => sum + s.revenue,
+                              0
+                            )
+                          )}
+                        </td>
+                        <td className="p-3 text-sm font-medium text-gray-900 text-right">
+                          100%
+                        </td>
                       </tr>
                     </tbody>
                   </table>

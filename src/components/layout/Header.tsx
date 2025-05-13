@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { useAuth } from "@/context/AuthContext";
-import { Badge } from "@/components/ui/badge";
+import { useAuth } from "../../context/AuthContext";
+import { Badge } from "../../components/ui/badge";
 import { Bell } from "lucide-react";
 import {
   DropdownMenu,
@@ -10,7 +10,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "../../components/ui/dropdown-menu";
 
 interface HeaderProps {
   setSidebarOpen: (open: boolean) => void;

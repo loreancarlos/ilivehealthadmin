@@ -1,4 +1,4 @@
-import { ChartData } from '@/types';
+import { ChartData } from '../../types';
 import { PieChart, Pie, ResponsiveContainer, Cell, Legend, Tooltip } from 'recharts';
 
 interface ServicesPieChartProps {

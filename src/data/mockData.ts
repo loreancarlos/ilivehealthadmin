@@ -9,7 +9,7 @@ import {
   ActivityItem,
   ServiceCategory,
   ChartData
-} from "@/types";
+} from "../types";
 
 // Mock professionals
 export const professionals: Professional[] = [

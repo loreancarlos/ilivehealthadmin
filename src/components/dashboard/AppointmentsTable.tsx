@@ -1,5 +1,5 @@
-import { Appointment } from "@/types";
-import { formatDate } from "@/lib/utils";
+import { Appointment } from "../../types";
+import { formatDate } from "../../lib/utils";
 
 interface AppointmentsTableProps {
   appointments: Appointment[];

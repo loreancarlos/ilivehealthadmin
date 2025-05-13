@@ -1,5 +1,5 @@
 import { useLocation, Link } from "wouter";
-import { cn } from "@/lib/utils";
+import { cn } from "../../lib/utils";
 
 const MobileNav = () => {
   const [location] = useLocation();

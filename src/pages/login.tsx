@@ -1,16 +1,16 @@
 import { useState } from "react";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "../context/AuthContext";
 import { useLocation } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../components/ui/card";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "../components/ui/form";
+import { Checkbox } from "../components/ui/checkbox";
 import { EyeIcon, EyeOffIcon, Loader2 } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Alert, AlertDescription } from "../components/ui/alert";
 
 // Form validation schema
 const loginSchema = z.object({

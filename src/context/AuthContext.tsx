@@ -1,7 +1,7 @@
 import { createContext, useState, useContext, ReactNode, useEffect } from "react";
-import { Professional, Clinic, User } from "@/types";
+import { Professional, Clinic, User } from "../types";
 import { useLocation } from "wouter";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest } from "../lib/queryClient";
 
 interface AuthResponse {
   user: User;

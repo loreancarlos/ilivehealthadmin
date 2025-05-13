@@ -1,5 +1,5 @@
-import { ActivityItem } from "@/types";
-import { formatDateTime } from "@/lib/utils";
+import { ActivityItem } from "../../types";
+import { formatDateTime } from "../../lib/utils";
 
 interface ActivityFeedProps {
   activities: ActivityItem[];

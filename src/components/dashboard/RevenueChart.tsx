@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { ChartData } from '@/types';
+import { ChartData } from '../../types';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency } from "../../lib/utils";
 
 interface RevenueChartProps {
   data: ChartData[];
