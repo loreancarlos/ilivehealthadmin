@@ -1,4 +1,10 @@
-import { createContext, useState, useContext, ReactNode, useEffect } from "react";
+import {
+  createContext,
+  useState,
+  useContext,
+  ReactNode,
+  useEffect,
+} from "react";
 import { Professional, Clinic, User } from "../types";
 import { useLocation } from "wouter";
 import { apiRequest } from "../lib/queryClient";
@@ -29,17 +35,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await apiRequest<AuthResponse>("/api/auth/me");
+        const response = await apiRequest<AuthResponse>("/auth/login");
         if (response) {
           const userData = {
             ...response.user,
             professional: response.professional,
-            clinic: response.clinic
+            clinic: response.clinic,
           };
           setUser(userData);
         }
       } catch (err) {
         // Not authenticated, that's ok
+        console.log(err);
         console.log("User not authenticated yet");
       } finally {
         setIsLoading(false);
@@ -53,23 +60,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     setError(null);
-    
+
     try {
       const response = await apiRequest<AuthResponse>("/api/auth/login", {
         method: "POST",
         body: JSON.stringify({ email, password }),
         headers: {
-          "Content-Type": "application/json"
-        }
+          "Content-Type": "application/json",
+        },
       });
-      
+
       if (response) {
         const userData = {
           ...response.user,
           professional: response.professional,
-          clinic: response.clinic
+          clinic: response.clinic,
         };
-        
+
         setUser(userData);
         setLocation("/dashboard");
       } else {
@@ -77,7 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     } catch (err) {
       if (err instanceof Error) {
-        setError(err.message);
+        setError(err.message+" LALA");
       } else {
         setError("Credenciais inválidas");
       }

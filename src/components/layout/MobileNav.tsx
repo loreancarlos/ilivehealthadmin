@@ -12,10 +12,10 @@ const MobileNav = () => {
   return (
     <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-border flex justify-around py-2 z-10">
       <Link 
-        href="/" 
+        href="/dashboard" 
         className={cn(
           "flex flex-col items-center justify-center p-2",
-          isActive("/") || isActive("/dashboard") ? "text-primary" : "text-gray-500"
+          isActive("/dashboard") ? "text-primary" : "text-gray-500"
         )}
       >
         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

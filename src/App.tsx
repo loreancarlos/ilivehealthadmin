@@ -20,16 +20,17 @@ import Sidebar from "./components/layout/Sidebar";
 import Header from "./components/layout/Header";
 import MobileNav from "./components/layout/MobileNav";
 import { useState } from "react";
+import { useAuthStore } from "./store/authStore";
 
 function AppContent() {
   const [location] = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Don't render layout for login page
-  if (location === "/login") {
+  if (location === "/") {
     return (
       <Switch>
-        <Route path="/login" component={Login} />
+        <Route path="/" component={Login} />
       </Switch>
     );
   }
@@ -42,7 +43,7 @@ function AppContent() {
         <Header setSidebarOpen={setSidebarOpen} />
 
         <Switch>
-          <Route path="/" component={Dashboard} />
+          <Route path="/" component={Login} />
           <Route path="/dashboard" component={Dashboard} />
           <Route path="/appointments" component={Appointments} />
           <Route path="/services" component={Services} />
@@ -60,6 +61,8 @@ function AppContent() {
 }
 
 function App() {
+  const { user } = useAuthStore();
+
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="light" storageKey="ilivehealth-admin-theme">

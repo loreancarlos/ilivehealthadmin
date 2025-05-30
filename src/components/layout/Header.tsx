@@ -24,7 +24,7 @@ const Header = ({ setSidebarOpen }: HeaderProps) => {
   // Get page title based on current route
   const getPageTitle = () => {
     switch (true) {
-      case location === "/" || location === "/dashboard":
+      case location === "/dashboard":
         return "Dashboard";
       case location.startsWith("/appointments"):
         return "Agendamentos";
