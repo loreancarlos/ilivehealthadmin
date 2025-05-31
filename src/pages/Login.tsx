@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useLocation } from "wouter";
 import { useForm } from "react-hook-form";
@@ -23,7 +23,7 @@ import {
   FormMessage,
 } from "../components/ui/form";
 import { Checkbox } from "../components/ui/checkbox";
-import { EyeIcon, EyeOffIcon, Loader2 } from "lucide-react";
+import { EyeIcon, EyeOffIcon, Loader2, User, Building } from "lucide-react";
 import { Alert, AlertDescription } from "../components/ui/alert";
 import { useAuthStore } from "../store/authStore";
 
@@ -44,7 +44,10 @@ const Login = () => {
   const { clinicLogin, professionalLogin } = useAuthStore();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isClinic, setIsClinic] = useState(false);
+  const [isClinic, setIsClinic] = useState(() => {
+    const saved = localStorage.getItem("loginType");
+    return saved === "clinic";
+  });
   const [_, navigate] = useLocation();
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -53,16 +56,30 @@ const Login = () => {
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: "",
+      email: localStorage.getItem("rememberedEmail") || "",
       password: "",
-      rememberMe: false,
+      rememberMe: localStorage.getItem("rememberMe") === "true",
     },
   });
+
+  // Save login type preference when it changes
+  useEffect(() => {
+    localStorage.setItem("loginType", isClinic ? "clinic" : "professional");
+  }, [isClinic]);
 
   // Form submission handler
   const onSubmit = async (values: LoginFormValues) => {
     setIsSubmitting(true);
     try {
+      // Handle remember me functionality
+      if (values.rememberMe) {
+        localStorage.setItem("rememberedEmail", values.email);
+        localStorage.setItem("rememberMe", "true");
+      } else {
+        localStorage.removeItem("rememberedEmail");
+        localStorage.setItem("rememberMe", "false");
+      }
+
       if (isClinic) {
         await clinicLogin(values.email, values.password);
       } else {
@@ -84,10 +101,16 @@ const Login = () => {
   };
 
   const toggleClinicOrProfessional = () => {
-    if (isClinic) {
-      setIsClinic(false);
-    } else {
-      setIsClinic(true);
+    setIsClinic(!isClinic);
+    setError(null); // Clear any existing errors when switching
+
+    // Clear form when switching user types if not remembering
+    if (!form.getValues("rememberMe")) {
+      form.reset({
+        email: "",
+        password: "",
+        rememberMe: false,
+      });
     }
   };
 
@@ -111,6 +134,52 @@ const Login = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {/* User Type Selection */}
+          <div className="mb-6">
+            <div className="flex items-center justify-center mb-4">
+              <span className="text-sm font-medium text-gray-700">
+                Fazer login como:
+              </span>
+            </div>
+            <div className="relative flex bg-gray-100 rounded-lg p-1">
+              <button
+                type="button"
+                onClick={() => setIsClinic(false)}
+                className={`flex-1 text-sm font-medium py-2 px-4 rounded-md transition-all duration-200 ${
+                  !isClinic
+                    ? "bg-white text-primary shadow-sm"
+                    : "text-gray-600 hover:text-gray-800"
+                }`}
+                disabled={isSubmitting}>
+                <div className="flex items-center justify-center space-x-2">
+                  <User className="h-4 w-4" />
+                  <span>Profissional</span>
+                </div>
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsClinic(true)}
+                className={`flex-1 text-sm font-medium py-2 px-4 rounded-md transition-all duration-200 ${
+                  isClinic
+                    ? "bg-white text-primary shadow-sm"
+                    : "text-gray-600 hover:text-gray-800"
+                }`}
+                disabled={isSubmitting}>
+                <div className="flex items-center justify-center space-x-2">
+                  <Building className="h-4 w-4" />
+                  <span>Clínica</span>
+                </div>
+              </button>
+            </div>
+            <div className="text-center mt-2">
+              <span className="text-xs text-gray-500">
+                {isClinic
+                  ? "Acesso para administradores de clínica"
+                  : "Acesso para profissionais de saúde"}
+              </span>
+            </div>
+          </div>
+
           {error && (
             <Alert variant="destructive" className="flex justify-center mb-4">
               <AlertDescription>{error}</AlertDescription>
@@ -210,7 +279,7 @@ const Login = () => {
                     Entrando...
                   </>
                 ) : (
-                  "Entrar"
+                  `Entrar como ${isClinic ? "Clínica" : "Profissional"}`
                 )}
               </Button>
             </form>

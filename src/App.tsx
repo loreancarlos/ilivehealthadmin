@@ -13,7 +13,7 @@ import Clients from "./pages/clients";
 import Finance from "./pages/finance";
 import Reports from "./pages/reports";
 import Settings from "./pages/settings";
-import Login from "./pages/login";
+import Login from "./pages/Login";
 import NotFound from "./pages/not-found";
 
 import Sidebar from "./components/layout/Sidebar";
