@@ -12,9 +12,35 @@ export interface AuthError {
 }
 
 export class AuthService {
-  static async login(email: string, password: string): Promise<LoginResponse> {
+  static async clinicLogin(
+    email: string,
+    password: string
+  ): Promise<LoginResponse> {
     try {
-      return await api.login(email, password);
+      return await api.clinicLogin(email, password);
+    } catch (error) {
+      if (error instanceof Error) {
+        console.log(error);
+        if (
+          error.message.includes("fetch") ||
+          error.message.includes("failed")
+        ) {
+          throw new Error("");
+        }
+        if (error.message.includes("Unauthorized")) {
+          throw new Error("Email ou senha inválidos");
+        }
+      }
+      throw new Error("Erro inesperado");
+    }
+  }
+
+  static async professionalLogin(
+    email: string,
+    password: string
+  ): Promise<LoginResponse> {
+    try {
+      return await api.professionalLogin(email, password);
     } catch (error) {
       if (error instanceof Error) {
         console.log(error);

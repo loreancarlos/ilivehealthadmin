@@ -41,9 +41,10 @@ const loginSchema = z.object({
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 const Login = () => {
-  const { login } = useAuthStore();
+  const { clinicLogin, professionalLogin } = useAuthStore();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isClinic, setIsClinic] = useState(false);
   const [_, navigate] = useLocation();
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -62,7 +63,11 @@ const Login = () => {
   const onSubmit = async (values: LoginFormValues) => {
     setIsSubmitting(true);
     try {
-      await login(values.email, values.password);
+      if (isClinic) {
+        await clinicLogin(values.email, values.password);
+      } else {
+        await professionalLogin(values.email, values.password);
+      }
       navigate("/dashboard");
     } catch (error) {
       setError(
@@ -76,6 +81,14 @@ const Login = () => {
   // Toggle password visibility
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
+  };
+
+  const toggleClinicOrProfessional = () => {
+    if (isClinic) {
+      setIsClinic(false);
+    } else {
+      setIsClinic(true);
+    }
   };
 
   return (

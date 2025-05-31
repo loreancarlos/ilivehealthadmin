@@ -13,7 +13,8 @@ interface AuthState {
   user: User | null;
   token: string | null;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  clinicLogin: (email: string, password: string) => Promise<void>;
+  professionalLogin: (email: string, password: string) => Promise<void>;
   logout: () => void;
   changePassword: (
     currentPassword: string,
@@ -32,9 +33,24 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       token: null,
       isAuthenticated: false,
-      login: async (email: string, password: string) => {
+      clinicLogin: async (email: string, password: string) => {
         try {
-          const { user, token } = await AuthService.login(email, password);
+          const { user, token } = await AuthService.clinicLogin(
+            email,
+            password
+          );
+          set({ user, token, isAuthenticated: true });
+        } catch (error) {
+          const authError = error as AuthError;
+          throw new Error(authError.message);
+        }
+      },
+      professionalLogin: async (email: string, password: string) => {
+        try {
+          const { user, token } = await AuthService.professionalLogin(
+            email,
+            password
+          );
           set({ user, token, isAuthenticated: true });
         } catch (error) {
           const authError = error as AuthError;
