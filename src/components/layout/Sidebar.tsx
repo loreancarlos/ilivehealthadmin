@@ -36,13 +36,15 @@ const Sidebar = ({ open, setOpen }: SidebarProps) => {
           "w-full lg:w-64 bg-white border-r border-border fixed inset-y-0 z-50 transition-transform duration-300 ease-in-out lg:translate-x-0",
           open ? "translate-x-0" : "-translate-x-full"
         )}>
-        <div className="p-4 border-b border-border flex justify-between items-center">
+        <div className="px-4 h-16 border-b border-border flex justify-between items-center">
           <div className="flex items-center">
             <span className="text-primary font-bold text-2xl">
               iLive<span className="text-accent text-lg">health</span>
             </span>
             <span className="ml-2 text-xs font-medium bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
-              ADMIN
+              {localStorage.getItem("loginType") === "clinic"
+                ? "CLINIC"
+                : "PROFESSIONAL"}
             </span>
           </div>
           <button

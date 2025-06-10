@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { User } from "../types";
+import { Clinic, Professional } from "../types";
 import { AuthService, AuthError } from "../services/authService";
 
 /* interface GoogleCalendarUpdate {
@@ -10,7 +10,8 @@ import { AuthService, AuthError } from "../services/authService";
 } */
 
 interface AuthState {
-  user: User | null;
+  professional: Professional | null;
+  clinic: Clinic | null;
   token: string | null;
   isAuthenticated: boolean;
   clinicLogin: (email: string, password: string) => Promise<void>;
@@ -20,7 +21,6 @@ interface AuthState {
     currentPassword: string,
     newPassword: string
   ) => Promise<void>;
-  adminResetPassword: (userId: string, newPassword: string) => Promise<void>;
   /* updateGoogleCalendar: (
     userId: string,
     data: GoogleCalendarUpdate
@@ -30,16 +30,18 @@ interface AuthState {
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
-      user: null,
+      clinic: null,
+      professional: null,
       token: null,
       isAuthenticated: false,
       clinicLogin: async (email: string, password: string) => {
         try {
-          const { user, token } = await AuthService.clinicLogin(
+          const { clinic, token } = await AuthService.clinicLogin(
             email,
             password
           );
-          set({ user, token, isAuthenticated: true });
+          console.log(clinic);
+          set({ clinic, token, isAuthenticated: true });
         } catch (error) {
           const authError = error as AuthError;
           throw new Error(authError.message);
@@ -47,18 +49,23 @@ export const useAuthStore = create<AuthState>()(
       },
       professionalLogin: async (email: string, password: string) => {
         try {
-          const { user, token } = await AuthService.professionalLogin(
+          const { professional, token } = await AuthService.professionalLogin(
             email,
             password
           );
-          set({ user, token, isAuthenticated: true });
+          set({ professional, token, isAuthenticated: true });
         } catch (error) {
           const authError = error as AuthError;
           throw new Error(authError.message);
         }
       },
       logout: () => {
-        set({ user: null, token: null, isAuthenticated: false });
+        set({
+          professional: null,
+          clinic: null,
+          token: null,
+          isAuthenticated: false,
+        });
       },
       changePassword: async (currentPassword: string, newPassword: string) => {
         try {
@@ -112,7 +119,8 @@ export const useAuthStore = create<AuthState>()(
     {
       name: "auth-storage",
       partialize: (state) => ({
-        user: state.user,
+        clinic: state.clinic,
+        professional: state.professional,
         token: state.token,
         isAuthenticated: state.isAuthenticated,
       }),

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useAuth } from "../context/AuthContext";
+/* import { useAuth } from "../context/AuthContext"; */
 import { useLocation } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -41,13 +41,15 @@ const loginSchema = z.object({
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 const Login = () => {
-  const { clinicLogin, professionalLogin } = useAuthStore();
+  const { clinicLogin, professionalLogin, clinic, professional } =
+    useAuthStore();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isClinic, setIsClinic] = useState(() => {
     const saved = localStorage.getItem("loginType");
     return saved === "clinic";
   });
+
   const [_, navigate] = useLocation();
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -66,6 +68,13 @@ const Login = () => {
   useEffect(() => {
     localStorage.setItem("loginType", isClinic ? "clinic" : "professional");
   }, [isClinic]);
+
+  useEffect(() => {
+    // Se estiver logado, redireciona para o dashboard
+    if (clinic || professional) {
+      navigate("/dashboard");
+    }
+  }, [clinic, professional, navigate]);
 
   // Form submission handler
   const onSubmit = async (values: LoginFormValues) => {
@@ -100,8 +109,8 @@ const Login = () => {
     setShowPassword(!showPassword);
   };
 
-  const toggleClinicOrProfessional = () => {
-    setIsClinic(!isClinic);
+  const toggleClinicOrProfessional = (value: boolean) => {
+    setIsClinic(value);
     setError(null); // Clear any existing errors when switching
 
     // Clear form when switching user types if not remembering
@@ -144,7 +153,7 @@ const Login = () => {
             <div className="relative flex bg-gray-100 rounded-lg p-1">
               <button
                 type="button"
-                onClick={() => setIsClinic(false)}
+                onClick={() => toggleClinicOrProfessional(false)}
                 className={`flex-1 text-sm font-medium py-2 px-4 rounded-md transition-all duration-200 ${
                   !isClinic
                     ? "bg-white text-primary shadow-sm"
@@ -158,7 +167,7 @@ const Login = () => {
               </button>
               <button
                 type="button"
-                onClick={() => setIsClinic(true)}
+                onClick={() => toggleClinicOrProfessional(true)}
                 className={`flex-1 text-sm font-medium py-2 px-4 rounded-md transition-all duration-200 ${
                   isClinic
                     ? "bg-white text-primary shadow-sm"

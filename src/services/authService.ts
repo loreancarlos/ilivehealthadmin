@@ -1,9 +1,10 @@
 import { api } from "./api";
-import { User } from "../types";
+import { Clinic, Professional } from "../types";
 
 export interface LoginResponse {
   token: string;
-  user: User;
+  clinic?: Clinic;
+  professional?: Professional;
 }
 
 export interface AuthError {

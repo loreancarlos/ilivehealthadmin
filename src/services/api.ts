@@ -94,7 +94,7 @@ class ApiClient {
   // Auth
   async clinicLogin(email: string, password: string) {
     const response = await this.request<{ token: string; user: any }>(
-      "/auth/clinic/login",
+      "/auth/login/clinic",
       {
         method: "POST",
         body: JSON.stringify({ email, password }),
@@ -106,7 +106,7 @@ class ApiClient {
 
   async professionalLogin(email: string, password: string) {
     const response = await this.request<{ token: string; user: any }>(
-      "/auth/professional/login",
+      "/auth/login/professional",
       {
         method: "POST",
         body: JSON.stringify({ email, password }),

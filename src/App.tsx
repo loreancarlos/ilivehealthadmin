@@ -6,25 +6,23 @@ import { TooltipProvider } from "./components/ui/tooltip";
 import { ThemeProvider } from "./components/theme-provider";
 import { AuthProvider } from "./context/AuthContext";
 
-import Dashboard from "./pages/dashboard";
-import Appointments from "./pages/appointments";
-import Services from "./pages/services";
-import Clients from "./pages/clients";
-import Finance from "./pages/finance";
-import Reports from "./pages/reports";
-import Settings from "./pages/settings";
+import Dashboard from "./pages/Dashboard";
+import Appointments from "./pages/Appointments";
+import Services from "./pages/Services";
+import Clients from "./pages/Clients";
+import Finance from "./pages/Finance";
+import Reports from "./pages/Reports";
+import Settings from "./pages/Settings";
 import Login from "./pages/Login";
-import NotFound from "./pages/not-found";
-
 import Sidebar from "./components/layout/Sidebar";
 import Header from "./components/layout/Header";
-import MobileNav from "./components/layout/MobileNav";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuthStore } from "./store/authStore";
 
 function AppContent() {
   const [location] = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { clinic, professional } = useAuthStore();
 
   // Don't render layout for login page
   if (location === "/") {
@@ -51,18 +49,27 @@ function AppContent() {
           <Route path="/finance" component={Finance} />
           <Route path="/reports" component={Reports} />
           <Route path="/settings" component={Settings} />
-          <Route component={NotFound} />
+          <Route
+            path="*"
+            component={() => {
+              const [, setLocation] = useLocation(); // hook válido aqui
+              const { clinic, professional } = useAuthStore();
+
+              useEffect(() => {
+                if (clinic || professional) setLocation("/dashboard");
+                else setLocation("/");
+              }, [clinic, professional, setLocation]);
+
+              return null;
+            }}
+          />
         </Switch>
       </main>
-
-      <MobileNav />
     </div>
   );
 }
 
 function App() {
-  const { user } = useAuthStore();
-
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="light" storageKey="ilivehealth-admin-theme">

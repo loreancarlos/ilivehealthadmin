@@ -1,16 +1,16 @@
 import { Calendar, BarChart3, Users, Percent } from "lucide-react";
-import StatsCard from "../../components/dashboard/StatsCard";
-import RevenueChart from "../../components/dashboard/RevenueChart";
-import ServicesPieChart from "../../components/dashboard/ServicesPieChart";
-import AppointmentsTable from "../../components/dashboard/AppointmentsTable";
-import ActivityFeed from "../../components/dashboard/ActivityFeed";
+import StatsCard from "../components/dashboard/StatsCard";
+import RevenueChart from "../components/dashboard/RevenueChart";
+import ServicesPieChart from "../components/dashboard/ServicesPieChart";
+import AppointmentsTable from "../components/dashboard/AppointmentsTable";
+import ActivityFeed from "../components/dashboard/ActivityFeed";
 import { 
   statistics, 
   weeklyRevenueData, 
   servicesPieChartData, 
   appointments,
   activityItems
-} from "../../data/mockData";
+} from "../data/mockData";
 import { useState } from "react";
 
 const Dashboard = () => {

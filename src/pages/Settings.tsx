@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../context/AuthContext";
 import {
   User,
   Clock,
@@ -22,7 +22,7 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "../../components/ui/tabs";
+} from "../components/ui/tabs";
 import {
   Card,
   CardContent,
@@ -30,17 +30,17 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "../../components/ui/card";
-import { Input } from "../../components/ui/input";
-import { Button } from "../../components/ui/button";
-import { Textarea } from "../../components/ui/textarea";
+} from "../components/ui/card";
+import { Input } from "../components/ui/input";
+import { Button } from "../components/ui/button";
+import { Textarea } from "../components/ui/textarea";
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "../../components/ui/avatar";
-import { Switch } from "../../components/ui/switch";
-import { Separator } from "../../components/ui/separator";
+} from "../components/ui/avatar";
+import { Switch } from "../components/ui/switch";
+import { Separator } from "../components/ui/separator";
 import {
   Form,
   FormControl,
@@ -49,15 +49,15 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "../../components/ui/form";
+} from "../components/ui/form";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../../components/ui/select";
-import { getInitials } from "../../lib/utils";
+} from "../components/ui/select";
+import { getInitials } from "../lib/utils";
 
 // Form schemas
 const profileFormSchema = z.object({
@@ -196,12 +196,12 @@ const Settings = () => {
 
   return (
     <div className="p-4 lg:p-6">
-      <div className="mb-6">
+      {/* <div className="mb-6">
         <h2 className="text-xl font-semibold text-gray-900">Configurações</h2>
         <p className="text-sm text-gray-500">
           Gerencie suas preferências e informações
         </p>
-      </div>
+      </div> */}
 
       <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-6">
         <div className="md:border-r border-gray-200 pr-6">

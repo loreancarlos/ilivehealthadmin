@@ -49,7 +49,7 @@ export const professionals: Professional[] = [
 export const clinics: Clinic[] = [
   {
     id: "1",
-    name: "Clínica Bem Estar",
+    fantasyName: "Clínica Bem Estar",
     address: {
       street: "Av. Paulista",
       number: "1000",
@@ -74,7 +74,7 @@ export const clinics: Clinic[] = [
   },
   {
     id: "2",
-    name: "Centro Médico Saúde",
+    fantasyName: "Centro Médico Saúde",
     address: {
       street: "Rua Augusta",
       number: "789",

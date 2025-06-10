@@ -10,9 +10,9 @@ import {
   Tag,
   Clock,
 } from "lucide-react";
-import { Button } from "../../components/ui/button";
-import { Input } from "../../components/ui/input";
-import { Badge } from "../../components/ui/badge";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import { Badge } from "../components/ui/badge";
 import {
   Card,
   CardContent,
@@ -20,14 +20,14 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "../../components/ui/card";
+} from "../components/ui/card";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../../components/ui/select";
+} from "../components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -36,7 +36,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "../../components/ui/dialog";
+} from "../components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -45,18 +45,18 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "../../components/ui/form";
-import { Textarea } from "../../components/ui/textarea";
-import { Switch } from "../../components/ui/switch";
+} from "../components/ui/form";
+import { Textarea } from "../components/ui/textarea";
+import { Switch } from "../components/ui/switch";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "../../components/ui/tabs";
-import { services, serviceCategories } from "../../data/mockData";
-import { Service, ServiceCategory } from "../../types";
-import { formatCurrency } from "../../lib/utils";
+} from "../components/ui/tabs";
+import { services, serviceCategories } from "../data/mockData";
+import { Service, ServiceCategory } from "../types";
+import { formatCurrency } from "../lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -207,7 +207,7 @@ const Services = () => {
     <div className="p-4 lg:p-6">
       <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-xl font-semibold text-gray-900">Serviços</h2>
+          <h2 className="text-base font-semibold text-gray-900">Visão geral</h2>
           <p className="text-sm text-gray-500">
             Gerencie os serviços oferecidos pela clínica
           </p>

@@ -15,7 +15,7 @@ export interface Professional {
   specialty: string;
   email: string;
   phoneNumber?: string;
-  profileImage?: string;
+  perfilImage?: string;
   registrationNumber?: string;
   clinicIds?: string[];
 }
@@ -23,10 +23,10 @@ export interface Professional {
 // Clinic related types
 export interface Clinic {
   id: string;
-  name: string;
-  address: Address;
+  fantasyName: string;
+  address?: Address;
   phoneNumber?: string;
-  email?: string;
+  email: string;
   logo?: string;
   description?: string;
   openingHours?: OpeningHours[];

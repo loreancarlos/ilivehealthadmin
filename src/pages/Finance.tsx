@@ -1,23 +1,23 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Calendar, Search, Filter, Download, TrendingUp, TrendingDown, DollarSign, CreditCard, Wallet, RefreshCw } from "lucide-react";
-import { Button } from "../../components/ui/button";
-import { Input } from "../../components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "../../components/ui/card";
+} from "../components/ui/card";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../../components/ui/select";
+} from "../components/ui/select";
 import {
   AreaChart,
   Area,
@@ -33,9 +33,9 @@ import {
   Cell,
   Legend,
 } from "recharts";
-import { transactions, appointments } from "../../data/mockData";
-import { Transaction } from "../../types";
-import { formatCurrency, formatDate } from "../../lib/utils";
+import { transactions, appointments } from "../data/mockData";
+import { Transaction } from "../types";
+import { formatCurrency, formatDate } from "../lib/utils";
 
 // Get transactions mock data
 const fetchTransactions = async () => {
@@ -194,7 +194,7 @@ const Finance = () => {
     <div className="p-4 lg:p-6">
       <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-xl font-semibold text-gray-900">Financeiro</h2>
+          <h2 className="text-base font-semibold text-gray-900">Visão geral</h2>
           <p className="text-sm text-gray-500">Gerenciamento financeiro da clínica</p>
         </div>
         

@@ -10,28 +10,28 @@ import {
   Search,
   ChevronDown,
 } from "lucide-react";
-import { Button } from "../../components/ui/button";
+import { Button } from "../components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "../../components/ui/card";
+} from "../components/ui/card";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "../../components/ui/tabs";
-import { Input } from "../../components/ui/input";
+} from "../components/ui/tabs";
+import { Input } from "../components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../../components/ui/select";
+} from "../components/ui/select";
 import {
   BarChart,
   Bar,
@@ -51,8 +51,8 @@ import {
   weeklyRevenueData,
   servicesPieChartData,
   statistics,
-} from "../../data/mockData";
-import { formatCurrency } from "../../lib/utils";
+} from "../data/mockData";
+import { formatCurrency } from "../lib/utils";
 
 // Mock data for reports
 const monthlyRevenueData = [
@@ -124,7 +124,7 @@ const Reports = () => {
     <div className="p-4 lg:p-6">
       <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-xl font-semibold text-gray-900">Relatórios</h2>
+          <h2 className="text-base font-semibold text-gray-900">Visão geral</h2>
           <p className="text-sm text-gray-500">
             Análise de desempenho e métricas da clínica
           </p>

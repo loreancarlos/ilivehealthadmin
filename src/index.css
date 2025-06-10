@@ -61,22 +61,23 @@
   .sidebar-item.active {
     @apply border-l-[3px] border-l-primary bg-primary/10 text-primary;
   }
-  
+
   @media (max-width: 1024px) {
     .sidebar-item.active {
       @apply border-l-0 border-b-[3px] border-b-primary;
     }
   }
-  
+
   .slide-in {
     animation: slideIn 0.3s ease-out;
   }
-  
+
   @keyframes slideIn {
     from {
       transform: translateY(100%);
       opacity: 0;
     }
+
     to {
       transform: translateY(0);
       opacity: 1;
@@ -87,7 +88,7 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
-  
+
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
