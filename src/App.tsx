@@ -4,11 +4,11 @@ import { queryClient } from "./lib/queryClient";
 import { Toaster } from "./components/ui/toaster";
 import { TooltipProvider } from "./components/ui/tooltip";
 import { ThemeProvider } from "./components/theme-provider";
-import { AuthProvider } from "./context/AuthContext";
 
 import Dashboard from "./pages/Dashboard";
 import Appointments from "./pages/Appointments";
 import Services from "./pages/Services";
+import Partners from "./pages/Partners";
 import Clients from "./pages/Clients";
 import Finance from "./pages/Finance";
 import Reports from "./pages/Reports";
@@ -22,7 +22,6 @@ import { useAuthStore } from "./store/authStore";
 function AppContent() {
   const [location] = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { clinic, professional } = useAuthStore();
 
   // Don't render layout for login page
   if (location === "/") {
@@ -45,6 +44,7 @@ function AppContent() {
           <Route path="/dashboard" component={Dashboard} />
           <Route path="/appointments" component={Appointments} />
           <Route path="/services" component={Services} />
+          <Route path="/partners" component={Partners} />
           <Route path="/clients" component={Clients} />
           <Route path="/finance" component={Finance} />
           <Route path="/reports" component={Reports} />
@@ -56,7 +56,7 @@ function AppContent() {
               const { clinic, professional } = useAuthStore();
 
               useEffect(() => {
-                if (clinic || professional) setLocation("/dashboard");
+                if (!!clinic || !!professional) setLocation("/dashboard");
                 else setLocation("/");
               }, [clinic, professional, setLocation]);
 
@@ -73,12 +73,10 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="light" storageKey="ilivehealth-admin-theme">
-        <AuthProvider>
-          <TooltipProvider>
-            <AppContent />
-            <Toaster />
-          </TooltipProvider>
-        </AuthProvider>
+        <TooltipProvider>
+          <AppContent />
+          <Toaster />
+        </TooltipProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );

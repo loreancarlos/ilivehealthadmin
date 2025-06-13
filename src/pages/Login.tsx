@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-/* import { useAuth } from "../context/AuthContext"; */
 import { useLocation } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -71,7 +70,7 @@ const Login = () => {
 
   useEffect(() => {
     // Se estiver logado, redireciona para o dashboard
-    if (clinic || professional) {
+    if (!!clinic || !!professional) {
       navigate("/dashboard");
     }
   }, [clinic, professional, navigate]);

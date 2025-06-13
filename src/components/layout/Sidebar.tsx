@@ -1,6 +1,17 @@
 import { useLocation, Link } from "wouter";
 import { cn } from "../../lib/utils";
 import { useAuthStore } from "../../store/authStore";
+import {
+  LayoutDashboard,
+  Calendar,
+  Users,
+  CreditCard,
+  FileText,
+  Settings,
+  HandHeart,
+  Stethoscope,
+  Handshake,
+} from "lucide-react";
 
 interface SidebarProps {
   open: boolean;
@@ -9,7 +20,7 @@ interface SidebarProps {
 
 const Sidebar = ({ open, setOpen }: SidebarProps) => {
   const [location] = useLocation();
-  const { user, logout } = useAuthStore();
+  const { clinic, logout } = useAuthStore();
   const [_, navigate] = useLocation();
 
   const isActive = (path: string) => {
@@ -33,7 +44,7 @@ const Sidebar = ({ open, setOpen }: SidebarProps) => {
 
       <aside
         className={cn(
-          "w-full lg:w-64 bg-white border-r border-border fixed inset-y-0 z-50 transition-transform duration-300 ease-in-out lg:translate-x-0",
+          "w-full max-w-64 lg:w-64 bg-white border-r border-border fixed inset-y-0 z-50 transition-transform duration-300 ease-in-out lg:translate-x-0",
           open ? "translate-x-0" : "-translate-x-full"
         )}>
         <div className="px-4 h-16 border-b border-border flex justify-between items-center">
@@ -67,7 +78,7 @@ const Sidebar = ({ open, setOpen }: SidebarProps) => {
         </div>
 
         <div className="p-4">
-          {user && (
+          {/* {user && (
             <div className="flex items-center space-x-3 mb-6">
               {user.professional?.profileImage ? (
                 <img
@@ -91,7 +102,7 @@ const Sidebar = ({ open, setOpen }: SidebarProps) => {
                 <p className="text-xs text-gray-500">{user.clinic?.name}</p>
               </div>
             </div>
-          )}
+          )} */}
 
           <nav className="space-y-1">
             <Link
@@ -142,6 +153,19 @@ const Sidebar = ({ open, setOpen }: SidebarProps) => {
                 />
               </svg>
               <span className="text-sm font-medium">Agendamentos</span>
+            </Link>
+
+            <Link
+              href="/partners"
+              onClick={() => setOpen(false)}
+              className={cn(
+                "sidebar-item flex items-center space-x-3 p-2 rounded-md pl-3",
+                isActive("/partners")
+                  ? "active"
+                  : "text-gray-700 hover:bg-gray-50"
+              )}>
+              <Handshake size={20} />
+              <span className="text-sm font-medium">Parceiros</span>
             </Link>
 
             <Link

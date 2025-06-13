@@ -3,7 +3,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  role: 'admin' | 'professional' | 'clinic';
+  role: "admin" | "professional" | "clinic";
   professional?: Professional;
   clinic?: Clinic;
 }
@@ -14,18 +14,20 @@ export interface Professional {
   name: string;
   specialty: string;
   email: string;
-  phoneNumber?: string;
+  phone?: string;
   perfilImage?: string;
   registrationNumber?: string;
+  nameOfRegistration?: string;
   clinicIds?: string[];
 }
 
 // Clinic related types
 export interface Clinic {
   id: string;
+  cnpj: string;
   fantasyName: string;
   address?: Address;
-  phoneNumber?: string;
+  phone?: string;
   email: string;
   logo?: string;
   description?: string;
@@ -65,8 +67,8 @@ export interface Appointment {
   date: string;
   startTime: string;
   endTime: string;
-  status: 'scheduled' | 'confirmed' | 'completed' | 'cancelled' | 'no_show';
-  paymentStatus: 'pending' | 'paid' | 'refunded';
+  status: "scheduled" | "confirmed" | "completed" | "cancelled" | "no_show";
+  paymentStatus: "pending" | "paid" | "refunded";
   createdAt: string;
   updatedAt: string;
 }
@@ -109,7 +111,7 @@ export interface Transaction {
   professionalId: string;
   clinicId: string;
   amount: number;
-  status: 'pending' | 'completed' | 'refunded' | 'failed';
+  status: "pending" | "completed" | "refunded" | "failed";
   date: string;
   paymentMethod: string;
   reference: string;
@@ -121,7 +123,7 @@ export interface Statistic {
   value: number;
   previousValue: number;
   change: number;
-  changeType: 'increase' | 'decrease' | 'neutral';
+  changeType: "increase" | "decrease" | "neutral";
 }
 
 export interface ChartData {
@@ -131,14 +133,20 @@ export interface ChartData {
 
 export interface ActivityItem {
   id: string;
-  type: 'appointment_created' | 'appointment_confirmed' | 'appointment_cancelled' | 'payment_received' | 'service_added' | 'patient_registered';
+  type:
+    | "appointment_created"
+    | "appointment_confirmed"
+    | "appointment_cancelled"
+    | "payment_received"
+    | "service_added"
+    | "patient_registered";
   date: string;
   message: string;
   userId?: string;
   userName?: string;
   userAvatar?: string;
   entityId?: string;
-  entityType?: 'appointment' | 'payment' | 'service' | 'patient';
+  entityType?: "appointment" | "payment" | "service" | "patient";
 }
 
 // Search and filter types

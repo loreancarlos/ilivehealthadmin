@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
 import {
   Search,
   Filter,
@@ -54,11 +53,11 @@ import {
   TabsList,
   TabsTrigger,
 } from "../components/ui/tabs";
-import { services, serviceCategories } from "../data/mockData";
 import { Service, ServiceCategory } from "../types";
 import { formatCurrency } from "../lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { useServicesStore } from "../store/servicesStore";
 import * as z from "zod";
 
 // Form schema for service
@@ -84,15 +83,7 @@ const serviceFormSchema = z.object({
 
 type ServiceFormValues = z.infer<typeof serviceFormSchema>;
 
-// Get services mock data
-const fetchServices = async () => {
-  return services;
-};
 
-// Get service categories mock data
-const fetchServiceCategories = async () => {
-  return serviceCategories;
-};
 
 const Services = () => {
   const [isOpenDialog, setIsOpenDialog] = useState(false);
@@ -101,15 +92,21 @@ const Services = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
-  const { data: servicesData, isLoading: isLoadingServices } = useQuery({
-    queryKey: ["/api/services"],
-    queryFn: fetchServices,
-  });
+  const {
+    services: servicesData,
+    categories: categoriesData,
+    isLoading,
+    fetchServices,
+    fetchCategories,
+    createService,
+    updateService,
+    deleteService,
+  } = useServicesStore();
 
-  const { data: categoriesData, isLoading: isLoadingCategories } = useQuery({
-    queryKey: ["/api/service-categories"],
-    queryFn: fetchServiceCategories,
-  });
+  useEffect(() => {
+    fetchServices();
+    fetchCategories();
+  }, [fetchServices, fetchCategories]);
 
   const form = useForm<ServiceFormValues>({
     resolver: zodResolver(serviceFormSchema),
@@ -124,25 +121,32 @@ const Services = () => {
     },
   });
 
-  const onSubmit = (data: ServiceFormValues) => {
-    // In a real app, this would save the service to the backend
-    console.log("Form submitted:", data);
+  const onSubmit = async (data: ServiceFormValues) => {
+    try {
+      // Convert tags string to array
+      const tagsArray = data.tags
+        ? data.tags.split(",").map((tag) => tag.trim())
+        : [];
 
-    // Convert tags string to array
-    const tagsArray = data.tags
-      ? data.tags.split(",").map((tag) => tag.trim())
-      : [];
+      // Create service object
+      const serviceData = {
+        ...data,
+        tags: tagsArray,
+      };
 
-    // Create service object
-    const serviceData = {
-      ...data,
-      tags: tagsArray,
-    };
+      if (editingService) {
+        await updateService(editingService.id, serviceData);
+      } else {
+        await createService(serviceData);
+      }
 
-    // Close the dialog
-    setIsOpenDialog(false);
-    setEditingService(null);
-    form.reset();
+      // Close the dialog
+      setIsOpenDialog(false);
+      setEditingService(null);
+      form.reset();
+    } catch (error) {
+      console.error("Erro ao salvar serviço:", error);
+    }
   };
 
   const handleEditService = (service: Service) => {
@@ -165,9 +169,14 @@ const Services = () => {
     setIsOpenDialog(true);
   };
 
-  const handleDeleteService = (serviceId: string) => {
-    // In a real app, this would delete the service from the backend
-    console.log("Delete service:", serviceId);
+  const handleDeleteService = async (serviceId: string) => {
+    if (confirm("Tem certeza que deseja excluir este serviço?")) {
+      try {
+        await deleteService(serviceId);
+      } catch (error) {
+        console.error("Erro ao excluir serviço:", error);
+      }
+    }
   };
 
   // Function to filter services based on selected category and search query
@@ -465,7 +474,7 @@ const Services = () => {
         </div>
       </div>
 
-      {isLoadingServices || isLoadingCategories ? (
+      {isLoading ? (
         <div className="p-8 text-center">
           <p>Carregando serviços...</p>
         </div>

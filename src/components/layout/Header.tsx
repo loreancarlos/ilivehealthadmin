@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
-import { useAuth } from "../../context/AuthContext";
 import { Badge } from "../../components/ui/badge";
 import { Bell } from "lucide-react";
 import {
@@ -30,6 +29,8 @@ const Header = ({ setSidebarOpen }: HeaderProps) => {
         return "Dashboard";
       case location.startsWith("/appointments"):
         return "Agendamentos";
+      case location.startsWith("/partners"):
+        return "Parceiros";
       case location.startsWith("/services"):
         return "Serviços";
       case location.startsWith("/clients"):

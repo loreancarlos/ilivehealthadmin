@@ -190,208 +190,135 @@ class ApiClient {
     });
   }
 
-  // Developments
-  async getDevelopments() {
-    return this.request<any[]>("/developments");
+  // Services
+  async getServices() {
+    return this.request<any[]>("/services");
   }
 
-  async createDevelopment(data: any) {
-    return this.request<any>("/developments", {
+  async getServiceCategories() {
+    return this.request<any[]>("/service-categories");
+  }
+
+  async createService(data: any) {
+    return this.request<any>("/services", {
       method: "POST",
       body: JSON.stringify(data),
     });
   }
 
-  async updateDevelopment(id: string, data: any) {
-    return this.request<any>(`/developments/${id}`, {
+  async updateService(id: string, data: any) {
+    return this.request<any>(`/services/${id}`, {
       method: "PUT",
       body: JSON.stringify(data),
     });
   }
 
-  async deleteDevelopment(id: string) {
-    return this.request<void>(`/developments/${id}`, {
+  async deleteService(id: string) {
+    return this.request<void>(`/services/${id}`, {
       method: "DELETE",
     });
   }
 
-  // Sales
-  async getSales() {
-    return this.request<any[]>("/sales");
+  async toggleServiceStatus(id: string) {
+    return this.request<any>(`/services/${id}/toggle-status`, {
+      method: "PATCH",
+    });
   }
 
-  async createSale(data: any) {
-    return this.request<any>("/sales", {
+  // Appointments
+  async getAppointments() {
+    return this.request<any[]>("/appointments");
+  }
+
+  async createAppointment(data: any) {
+    return this.request<any>("/appointments", {
       method: "POST",
       body: JSON.stringify(data),
     });
   }
 
-  async updateSale(id: string, data: any) {
-    return this.request<any>(`/sales/${id}`, {
+  async updateAppointment(id: string, data: any) {
+    return this.request<any>(`/appointments/${id}`, {
       method: "PUT",
       body: JSON.stringify(data),
     });
   }
 
-  async deleteSale(id: string) {
-    return this.request<void>(`/sales/${id}`, {
+  async deleteAppointment(id: string) {
+    return this.request<void>(`/appointments/${id}`, {
       method: "DELETE",
     });
   }
 
-  async updateInstallmentStatus(
-    saleId: string,
-    installmentNumber: number,
-    data: { billIssued: boolean; billPaid: boolean }
-  ) {
-    return this.request<any>(
-      `/sales/${saleId}/installments/${installmentNumber}`,
-      {
-        method: "PATCH",
-        body: JSON.stringify(data),
-      }
-    );
+  async updateAppointmentStatus(id: string, status: string) {
+    return this.request<any>(`/appointments/${id}/status`, {
+      method: "PATCH",
+      body: JSON.stringify({ status }),
+    });
   }
 
-  // Teams
-  async getTeams() {
-    return this.request<any[]>("/teams");
+  // Patients
+  async getPatients() {
+    return this.request<any[]>("/patients");
   }
 
-  async createTeam(data: any) {
-    return this.request<any>("/teams", {
+  async createPatient(data: any) {
+    return this.request<any>("/patients", {
       method: "POST",
       body: JSON.stringify(data),
     });
   }
 
-  async updateTeam(id: string, data: any) {
-    return this.request<any>(`/teams/${id}`, {
+  async updatePatient(id: string, data: any) {
+    return this.request<any>(`/patients/${id}`, {
       method: "PUT",
       body: JSON.stringify(data),
     });
   }
 
-  async deleteTeam(id: string) {
-    return this.request<void>(`/teams/${id}`, {
+  async deletePatient(id: string) {
+    return this.request<void>(`/patients/${id}`, {
       method: "DELETE",
     });
   }
 
-  async addTeamMember(teamId: string, userId: string) {
-    return this.request<any>("/teams/members", {
+  // Partners
+  async getAvailableProfessionals() {
+    return this.request<any[]>("/professionals");
+  }
+
+  async getAvailableClinics() {
+    return this.request<any[]>("/clinics");
+  }
+
+  async getPartnershipRequests() {
+    return this.request<any[]>("/partners/requests");
+  }
+
+  async getClinicsPartners() {
+    return this.request<any[]>("/partners/clinics");
+  }
+  async getProfessionalsPartners() {
+    return this.request<any[]>("/partners/professionals");
+  }
+
+  async sendPartnershipRequest(data: any) {
+    return this.request<any>("/partners", {
       method: "POST",
-      body: JSON.stringify({ teamId, userId }),
+      body: JSON.stringify(data),
     });
   }
 
-  async removeTeamMember(userId: string) {
-    return this.request<any>(`/teams/members/${userId}`, {
+  async respondToPartnershipRequest(requestId: string, status: string) {
+    return this.request<any>(`/partnership-requests/${requestId}/respond`, {
+      method: "PATCH",
+      body: JSON.stringify({ status }),
+    });
+  }
+
+  async removePartner(professionalId: string) {
+    return this.request<void>(`/partners/${professionalId}`, {
       method: "DELETE",
-    });
-  }
-
-  // Leads
-  async getLeads() {
-    return this.request<any[]>("/leads");
-  }
-
-  async createLead(data: any) {
-    return this.request<any>("/leads", {
-      method: "POST",
-      body: JSON.stringify(data),
-    });
-  }
-  async createImportLead(data: any) {
-    return this.request<any>("/leads/import", {
-      method: "POST",
-      body: JSON.stringify(data),
-    });
-  }
-
-  async updateLead(id: string, data: any) {
-    return this.request<any>(`/leads/${id}`, {
-      method: "PUT",
-      body: JSON.stringify(data),
-    });
-  }
-
-  async deleteLead(id: string) {
-    return this.request<void>(`/leads/${id}`, {
-      method: "DELETE",
-    });
-  }
-
-  // Business
-  async getBusiness() {
-    return this.request<any[]>("/business");
-  }
-
-  async createBusiness(data: any) {
-    return this.request<any>("/business", {
-      method: "POST",
-      body: JSON.stringify(data),
-    });
-  }
-
-  async updateBusiness(id: string, data: any) {
-    return this.request<any>(`/business/${id}`, {
-      method: "PUT",
-      body: JSON.stringify(data),
-    });
-  }
-
-  async deleteBusiness(id: string) {
-    return this.request<void>(`/business/${id}`, {
-      method: "DELETE",
-    });
-  }
-
-  // Call Mode Sessions
-  async getCallModeSessions() {
-    return this.request<any[]>("/callModeSessions");
-  }
-
-  async createCallModeSession(data: {
-    startTime: Date;
-    endTime: Date;
-    businessViewed: string[];
-    answeredCalls: number;
-    talkedCalls: number;
-    scheduledCalls: number;
-    whatsappCalls: number;
-    notInterestCalls: number;
-    recallCalls: number;
-    voicemailCalls: number;
-    invalidNumberCalls: number;
-    notReceivingCalls: number;
-  }) {
-    return this.request<any>("/callModeSessions", {
-      method: "POST",
-      body: JSON.stringify(data),
-    });
-  }
-
-  async updateCallModeSession(
-    id: string,
-    data: {
-      endTime?: Date;
-      businessViewed?: string[];
-      answeredCalls?: number;
-      talkedCalls: number;
-      scheduledCalls?: number;
-      whatsappCalls?: number;
-      notInterestCalls?: number;
-      recallCalls?: number;
-      voicemailCalls?: number;
-      invalidNumberCalls?: number;
-      notReceivingCalls?: number;
-    }
-  ) {
-    return this.request<any>(`/callModeSessions/${id}`, {
-      method: "PUT",
-      body: JSON.stringify(data),
     });
   }
 

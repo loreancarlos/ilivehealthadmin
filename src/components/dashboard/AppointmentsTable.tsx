@@ -32,7 +32,7 @@ const AppointmentsTable = ({ appointments, title }: AppointmentsTableProps) => {
         <button className="text-sm text-primary hover:underline">Ver todos</button>
       </div>
       
-      <div className="border rounded-md">
+      <div className="border rounded-md overflow-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead>
             <tr>

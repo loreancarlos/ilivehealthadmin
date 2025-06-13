@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useAuth } from "../context/AuthContext";
 import {
   User,
   Clock,
@@ -34,11 +33,7 @@ import {
 import { Input } from "../components/ui/input";
 import { Button } from "../components/ui/button";
 import { Textarea } from "../components/ui/textarea";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "../components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
 import { Switch } from "../components/ui/switch";
 import { Separator } from "../components/ui/separator";
 import {
@@ -58,6 +53,7 @@ import {
   SelectValue,
 } from "../components/ui/select";
 import { getInitials } from "../lib/utils";
+import { useAuthStore } from "../store/authStore";
 
 // Form schemas
 const profileFormSchema = z.object({
@@ -122,19 +118,19 @@ type SecurityFormValues = z.infer<typeof securityFormSchema>;
 type NotificationsValues = z.infer<typeof notificationsSchema>;
 
 const Settings = () => {
-  const { user } = useAuth();
+  const { professional, clinic } = useAuthStore();
   const [activeTab, setActiveTab] = useState("profile");
 
   // Profile form
   const profileForm = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
-      name: user?.name || "",
-      email: user?.email || "",
-      phone: user?.professional?.phoneNumber || "",
+      name: professional?.name || "",
+      email: professional?.email || "",
+      phone: professional?.phoneNumber || "",
       bio: "",
-      specialty: user?.professional?.specialty || "",
-      registrationNumber: user?.professional?.registrationNumber || "",
+      specialty: professional?.specialty || "",
+      registrationNumber: professional?.registrationNumber || "",
     },
   });
 
@@ -142,13 +138,13 @@ const Settings = () => {
   const clinicForm = useForm<ClinicFormValues>({
     resolver: zodResolver(clinicFormSchema),
     defaultValues: {
-      name: user?.clinic?.name || "",
-      email: user?.clinic?.email || "",
-      phone: user?.clinic?.phoneNumber || "",
-      address: user?.clinic?.address
-        ? `${user.clinic.address.street}, ${user.clinic.address.number}, ${user.clinic.address.city} - ${user.clinic.address.state}`
+      name: clinic?.fantasyName || "",
+      email: clinic?.email || "",
+      phone: clinic?.phoneNumber || "",
+      address: clinic?.address
+        ? `${clinic.address.street}, ${clinic.address.number}, ${clinic.address.city} - ${clinic.address.state}`
         : "",
-      description: user?.clinic?.description || "",
+      description: clinic?.description || "",
     },
   });
 
