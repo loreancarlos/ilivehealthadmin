@@ -117,22 +117,50 @@ const Partners = () => {
     }
   }, [isRequestDialogOpen, selectedProfessional]);
 
+  useEffect(() => {
+    if (isRequestDialogOpen && selectedClinic) {
+      form.setValue(
+        "message",
+        `Olá, ${selectedClinic.fantasyName}! Gostaria de fazer parte da sua rede de parceiros.`
+      );
+    }
+  }, [isRequestDialogOpen, selectedClinic]);
+
   const onSubmitRequest = async (f: PartnershipRequestValues) => {
-    if (!selectedProfessional) return;
-    const data = {
-      professionalId: selectedProfessional.id,
-      clinicId: clinic?.id,
-      clinicApproved: !!clinic ? "approved" : "pending",
-      professionalApproved: !!professional ? "approved" : "pending",
-      message: f.message,
-    };
-    try {
-      await sendPartnershipRequest(data);
-      setIsRequestDialogOpen(false);
-      setSelectedProfessional(null);
-      form.reset();
-    } catch (error) {
-      console.error("Erro ao enviar solicitação:", error);
+    if (!!clinic) {
+      if (!selectedProfessional) return;
+      const data = {
+        professionalId: selectedProfessional.id,
+        clinicId: clinic?.id,
+        clinicApproved: "approved",
+        professionalApproved: "pending",
+        message: f.message,
+      };
+      try {
+        await sendPartnershipRequest(data);
+        setIsRequestDialogOpen(false);
+        setSelectedProfessional(null);
+        form.reset();
+      } catch (error) {
+        console.error("Erro ao enviar solicitação:", error);
+      }
+    } else if (!!professional) {
+      if (!selectedClinic) return;
+      const data = {
+        professionalId: professional?.id,
+        clinicId: selectedClinic.id,
+        clinicApproved: "pending",
+        professionalApproved: "approved",
+        message: f.message,
+      };
+      try {
+        await sendPartnershipRequest(data);
+        setIsRequestDialogOpen(false);
+        setSelectedClinic(null);
+        form.reset();
+      } catch (error) {
+        console.error("Erro ao enviar solicitação:", error);
+      }
     }
   };
 
