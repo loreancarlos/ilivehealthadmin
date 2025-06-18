@@ -797,7 +797,7 @@ const Partners = () => {
                           </CardDescription>
                         </div>
                       </div>
-                      {getStatusBadge(request.partnership.professionalApproved)}
+                      {getStatusBadge(request.partnership.clinicApproved)}
                     </div>
                   </CardHeader>
                   <CardContent>
