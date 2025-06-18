@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Search,
   Plus,
@@ -51,9 +51,10 @@ import { usePartnersStore } from "../store/partnersStore";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { useLocation } from "wouter";
 import { Clinic, Professional } from "../types";
 import { useAuthStore } from "../store/authStore";
+import { useClinicStore } from "../store/clinicStore";
+import { useProfessionalStore } from "../store/professionalStore";
 
 const partnershipRequestSchema = z.object({
   message: z.string().min(10, {
@@ -64,24 +65,27 @@ const partnershipRequestSchema = z.object({
 type PartnershipRequestValues = z.infer<typeof partnershipRequestSchema>;
 
 const Partners = () => {
-  const [_, navigate] = useLocation();
   const { clinic, professional } = useAuthStore();
   const {
-    availableProfessionals,
-    availableClinics,
-    partnershipRequests,
-    professionalsPartners,
-    clinicsPartners,
-    isLoading,
-    error,
-    fetchAvailableProfessionals,
-    fetchAvailableClinics,
-    fetchPartnershipRequests,
-    fetchClinicsPartners,
-    fetchProfessionalsPartners,
+    partnerships,
+    isPartnersLoading,
+    partnersError,
+    fetchClinicsPartnerships,
+    fetchProfessionalsPartnerships,
     sendPartnershipRequest,
-    respondToPartnershipRequest,
+    respondToClinicPartnershipRequest,
+    respondToProfessionalPartnershipRequest,
+    removePartner,
   } = usePartnersStore();
+
+  const {
+    professionals,
+    fetchProfessionals,
+    isProfessionalsLoading,
+    professionalsError,
+  } = useProfessionalStore();
+  const { clinics, fetchClinics, isClinicsLoading, clinicsError } =
+    useClinicStore();
 
   const [isRequestDialogOpen, setIsRequestDialogOpen] = useState(false);
   const [selectedProfessional, setSelectedProfessional] =
@@ -98,13 +102,10 @@ const Partners = () => {
   });
 
   useEffect(() => {
-    !!clinic && fetchAvailableProfessionals();
-    !!professional && fetchAvailableClinics();
-
-    fetchPartnershipRequests();
-    
-    !!clinic && fetchProfessionalsPartners();
-    !!professional && fetchClinicsPartners();
+    !!clinic && fetchProfessionalsPartnerships();
+    !!professional && fetchClinicsPartnerships();
+    fetchClinics();
+    fetchProfessionals();
   }, [clinic, professional]);
 
   useEffect(() => {
@@ -135,12 +136,23 @@ const Partners = () => {
     }
   };
 
-  const handleRequestResponse = async (
+  const handleClinicRequestResponse = async (
     requestId: string,
-    status: "approved" | "rejected"
+    professionalApproved: "approved" | "rejected"
   ) => {
     try {
-      await respondToPartnershipRequest(requestId, status);
+      await respondToClinicPartnershipRequest(requestId, professionalApproved);
+    } catch (error) {
+      console.error("Erro ao responder solicitação:", error);
+    }
+  };
+
+  const handleProfessionalRequestResponse = async (
+    requestId: string,
+    clinicApproved: "approved" | "rejected"
+  ) => {
+    try {
+      await respondToProfessionalPartnershipRequest(requestId, clinicApproved);
     } catch (error) {
       console.error("Erro ao responder solicitação:", error);
     }
@@ -156,25 +168,175 @@ const Partners = () => {
     }
   };
 
-  const filteredProfessionals = availableProfessionals.filter(
-    (professional) =>
-      professional.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      professional.specialty?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  //Clinics
 
-  const filteredClinics = availableClinics.filter((clinic) =>
-    clinic.fantasyName.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const availableProfessionals = useMemo(() => {
+    const requestedProfessionalIds = new Set(
+      partnerships
+        .filter((p) => p.clinicId === clinic?.id)
+        .map((p) => p.professionalId)
+    );
 
-  const filteredClinicsPartners = clinicsPartners.filter((partner) =>
-    partner.fantasyName?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+    return professionals.filter(
+      (professional) => !requestedProfessionalIds.has(professional.id)
+    );
+  }, [professionals, partnerships, clinic]);
 
-  const filteredProfessionalsPartners = professionalsPartners.filter(
-    (partner) =>
-      partner.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      partner.specialty?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const pendingProfessionals = useMemo(() => {
+    return partnerships
+      .filter(
+        (p) =>
+          p.professionalApproved === "pending" || p.clinicApproved === "pending"
+      )
+      .map((partnership) => {
+        const professional = professionals.find(
+          (pro) => pro.id === partnership.professionalId
+        );
+
+        return {
+          partnership, // dados da solicitação (status, ids, etc.)
+          professional, // dados completos do profissional
+        };
+      })
+      .filter((item) => item.professional); // remove casos onde o profissional não foi encontrado
+  }, [professionals, partnerships]);
+
+  const professionalsPartners = useMemo(() => {
+    return partnerships
+      .filter(
+        (p) =>
+          p.professionalApproved === "approved" &&
+          p.clinicApproved === "approved"
+      )
+      .map((partnership) => {
+        const professional = professionals.find(
+          (pro) => pro.id === partnership.professionalId
+        );
+
+        return {
+          partnership, // dados da solicitação (status, ids, etc.)
+          professional, // dados completos do profissional
+        };
+      })
+      .filter((item) => item.professional); // remove casos onde o profissional não foi encontrado
+  }, [professionals, partnerships]);
+
+  const filteredAvailableProfessionals = useMemo(() => {
+    return availableProfessionals.filter(
+      (professional) =>
+        professional.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        professional.specialty
+          ?.toLowerCase()
+          .includes(searchQuery.toLowerCase())
+    );
+  }, [availableProfessionals, searchQuery]);
+
+  const filteredPendingProfessionals = useMemo(() => {
+    return pendingProfessionals.filter(
+      (partner) =>
+        partner.professional?.name
+          ?.toLowerCase()
+          .includes(searchQuery.toLowerCase()) ||
+        partner.professional?.specialty
+          ?.toLowerCase()
+          .includes(searchQuery.toLowerCase())
+    );
+  }, [pendingProfessionals, searchQuery]);
+
+  const filteredProfessionalsPartners = useMemo(() => {
+    return professionalsPartners.filter(
+      (partner) =>
+        partner.professional?.name
+          ?.toLowerCase()
+          .includes(searchQuery.toLowerCase()) ||
+        partner.professional?.specialty
+          ?.toLowerCase()
+          .includes(searchQuery.toLowerCase())
+    );
+  }, [professionalsPartners, searchQuery]);
+
+  //Professionals
+
+  const availableClinics = useMemo(() => {
+    const requestedClinicIds = new Set(
+      partnerships
+        .filter((p) => p.professionalId === professional?.id)
+        .map((p) => p.clinicId)
+    );
+
+    return clinics.filter((clinic) => !requestedClinicIds.has(clinic.id));
+  }, [clinics, partnerships, professional]);
+
+  const pendingClinics = useMemo(() => {
+    return partnerships
+      .filter(
+        (p) =>
+          p.clinicApproved === "pending" || p.professionalApproved === "pending"
+      )
+      .map((partnership) => {
+        const clinic = clinics.find(
+          (clinic) => clinic.id === partnership.clinicId
+        );
+
+        return {
+          partnership, // dados da solicitação (status, ids, etc.)
+          clinic, // dados completos do profissional
+        };
+      })
+      .filter((item) => item.clinic); // remove casos onde a clinica não foi encontrada
+  }, [clinics, partnerships]);
+
+  const clinicsPartners = useMemo(() => {
+    return partnerships
+      .filter(
+        (p) =>
+          p.clinicApproved === "approved" &&
+          p.professionalApproved === "approved"
+      )
+      .map((partnership) => {
+        const clinic = clinics.find(
+          (clinic) => clinic.id === partnership.clinicId
+        );
+
+        return {
+          partnership, // dados da solicitação (status, ids, etc.)
+          clinic, // dados completos do profissional
+        };
+      })
+      .filter((item) => item.clinic); // remove casos onde o profissional não foi encontrado
+  }, [clinics, partnerships]);
+
+  const filteredAvailableClinics = useMemo(() => {
+    return availableClinics.filter(
+      (clinic) =>
+        clinic.cnpj.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        clinic.fantasyName?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [availableClinics, searchQuery]);
+
+  const filteredPendingClinics = useMemo(() => {
+    return pendingClinics.filter(
+      (partner) =>
+        partner.clinic?.cnpj
+          ?.toLowerCase()
+          .includes(searchQuery.toLowerCase()) ||
+        partner.clinic?.fantasyName
+          ?.toLowerCase()
+          .includes(searchQuery.toLowerCase())
+    );
+  }, [pendingClinics, searchQuery]);
+
+  const filteredClinicsPartners = useMemo(() => {
+    return clinicsPartners.filter(
+      (partner) =>
+        partner.clinic?.cnpj
+          ?.toLowerCase()
+          .includes(searchQuery.toLowerCase()) ||
+        partner.clinic?.fantasyName
+          ?.toLowerCase()
+          .includes(searchQuery.toLowerCase())
+    );
+  }, [clinicsPartners, searchQuery]);
 
   const getInitials = (name: string) => {
     return name
@@ -241,19 +403,31 @@ const Partners = () => {
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="available">Disponíveis</TabsTrigger>
+          <TabsTrigger value="available">
+            Disponíveis (
+            {!!clinic
+              ? filteredAvailableProfessionals.length
+              : filteredAvailableClinics.length}
+            )
+          </TabsTrigger>
           <TabsTrigger value="requests">
             Solicitações (
-            {partnershipRequests.filter((r) => r.status === "pending").length})
+            {!!clinic
+              ? filteredPendingProfessionals.length
+              : filteredPendingClinics.length}
+            )
           </TabsTrigger>
           <TabsTrigger value="partners">
             Parceiros (
-            {!!clinic ? professionalsPartners.length : clinicsPartners.length})
+            {!!clinic
+              ? filteredProfessionalsPartners.length
+              : filteredClinicsPartners.length}
+            )
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="available" className="mt-4">
-          {isLoading ? (
+          {isPartnersLoading || isClinicsLoading || isProfessionalsLoading ? (
             <div className="p-8 text-center">
               {!!clinic && <p>Carregando profissionais...</p>}
               {!!professional && <p>Carregando clinicas...</p>}
@@ -261,7 +435,7 @@ const Partners = () => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {!!clinic &&
-                filteredProfessionals.map((professional) => (
+                filteredAvailableProfessionals.map((professional) => (
                   <Card key={professional.id}>
                     <CardHeader className="pb-2">
                       <div className="flex items-center space-x-3">
@@ -374,7 +548,7 @@ const Partners = () => {
                 ))}
 
               {!!professional &&
-                filteredClinics.map((clinic) => (
+                filteredAvailableClinics.map((clinic) => (
                   <Card key={clinic.id}>
                     <CardHeader className="pb-2">
                       <div className="flex items-center space-x-3">
@@ -480,88 +654,182 @@ const Partners = () => {
                   </Card>
                 ))}
 
-              {!!clinic && filteredProfessionals.length === 0 && (
-                <div className="col-span-full p-8 text-center text-gray-500 border rounded-lg bg-gray-50">
-                  Nenhum profissional disponível encontrado.
-                </div>
-              )}
-              {!!professional && filteredClinics.length === 0 && (
-                <div className="col-span-full p-8 text-center text-gray-500 border rounded-lg bg-gray-50">
-                  Nenhuma clinica disponível encontrado.
-                </div>
-              )}
+              {!!clinic &&
+                !isProfessionalsLoading &&
+                !isPartnersLoading &&
+                filteredAvailableProfessionals.length === 0 && (
+                  <div className="col-span-full p-8 text-center text-gray-500 border rounded-lg bg-gray-50">
+                    Nenhum profissional disponível encontrado.
+                  </div>
+                )}
+              {!!professional &&
+                !isClinicsLoading &&
+                !isPartnersLoading &&
+                filteredAvailableClinics.length === 0 && (
+                  <div className="col-span-full p-8 text-center text-gray-500 border rounded-lg bg-gray-50">
+                    Nenhuma clinica disponível encontrado.
+                  </div>
+                )}
             </div>
           )}
         </TabsContent>
 
         <TabsContent value="requests" className="mt-4">
           <div className="space-y-4">
-            {partnershipRequests.map((request) => (
-              <Card key={request.id}>
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <div className="flex items-center space-x-3">
-                      <Avatar className="h-12 w-12">
-                        <AvatarImage
-                          src={request.professional.perfilImage}
-                          alt={request.professional.name}
-                        />
-                        <AvatarFallback>
-                          {getInitials(request.professional.name)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <CardTitle className="text-lg">
-                          {request.professional.name}
-                        </CardTitle>
-                        <CardDescription>
-                          {request.professional.specialty}
-                        </CardDescription>
+            {!!clinic &&
+              filteredPendingProfessionals.map((request) => (
+                <Card key={request.partnership.id}>
+                  <CardHeader>
+                    <div className="flex justify-between items-start">
+                      <div className="flex items-center space-x-3">
+                        <Avatar className="h-12 w-12">
+                          <AvatarImage
+                            src={request.professional?.perfilImage}
+                            alt={request.professional?.name}
+                          />
+                          <AvatarFallback>
+                            {getInitials(request.professional?.name || "?")}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <CardTitle className="text-lg">
+                            {request.professional?.name}
+                          </CardTitle>
+                          <CardDescription>
+                            {request.professional?.specialty}
+                          </CardDescription>
+                        </div>
                       </div>
+                      {getStatusBadge(request.partnership.professionalApproved)}
                     </div>
-                    {getStatusBadge(request.status)}
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-gray-700 mb-3">
-                    {request.message}
-                  </p>
-                  <div className="flex items-center text-xs text-gray-500">
-                    <Clock className="h-3 w-3 mr-1" />
-                    Enviado em {new Date(request.createdAt).toLocaleString()}
-                  </div>
-                </CardContent>
-                {request.status === "pending" && (
-                  <CardFooter className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() =>
-                        handleRequestResponse(request.id, "rejected")
-                      }
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50">
-                      <X className="h-4 w-4 mr-1" />
-                      Rejeitar
-                    </Button>
-                    <Button
-                      size="sm"
-                      onClick={() =>
-                        handleRequestResponse(request.id, "approved")
-                      }
-                      className="bg-green-600 hover:bg-green-700">
-                      <Check className="h-4 w-4 mr-1" />
-                      Aprovar
-                    </Button>
-                  </CardFooter>
-                )}
-              </Card>
-            ))}
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-gray-700 mb-3">
+                      {request.partnership.message}
+                    </p>
+                    <div className="flex items-center text-xs text-gray-500">
+                      <Clock className="h-3 w-3 mr-1" />
+                      Enviado em{" "}
+                      {new Date(request.partnership.createdAt).toLocaleString()}
+                    </div>
+                  </CardContent>
+                  {request.partnership.clinicApproved === "pending" && (
+                    <CardFooter className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          handleProfessionalRequestResponse(
+                            request.partnership.id,
+                            "rejected"
+                          )
+                        }
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50">
+                        <X className="h-4 w-4 mr-1" />
+                        Rejeitar
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() =>
+                          handleProfessionalRequestResponse(
+                            request.partnership.id,
+                            "approved"
+                          )
+                        }
+                        className="bg-green-600 hover:bg-green-700">
+                        <Check className="h-4 w-4 mr-1" />
+                        Aprovar
+                      </Button>
+                    </CardFooter>
+                  )}
+                </Card>
+              ))}
 
-            {partnershipRequests.length === 0 && (
-              <div className="p-8 text-center text-gray-500 border rounded-lg bg-gray-50">
-                Nenhuma solicitação de parceria encontrada.
-              </div>
-            )}
+            {!!professional &&
+              filteredPendingClinics.map((request) => (
+                <Card key={request.partnership.id}>
+                  <CardHeader>
+                    <div className="flex justify-between items-start">
+                      <div className="flex items-center space-x-3">
+                        <Avatar className="h-12 w-12">
+                          <AvatarImage
+                            src={request.clinic?.logo}
+                            alt={request.clinic?.fantasyName}
+                          />
+                          <AvatarFallback>
+                            {getInitials(request.clinic?.fantasyName || "?")}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <CardTitle className="text-lg">
+                            {request.clinic?.fantasyName}
+                          </CardTitle>
+                          <CardDescription>
+                            {request.clinic?.address?.city}
+                          </CardDescription>
+                        </div>
+                      </div>
+                      {getStatusBadge(request.partnership.professionalApproved)}
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-gray-700 mb-3">
+                      {request.partnership.message}
+                    </p>
+                    <div className="flex items-center text-xs text-gray-500">
+                      <Clock className="h-3 w-3 mr-1" />
+                      Enviado em{" "}
+                      {new Date(request.partnership.createdAt).toLocaleString()}
+                    </div>
+                  </CardContent>
+                  {request.partnership.professionalApproved === "pending" && (
+                    <CardFooter className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          handleClinicRequestResponse(
+                            request.partnership.id,
+                            "rejected"
+                          )
+                        }
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50">
+                        <X className="h-4 w-4 mr-1" />
+                        Rejeitar
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() =>
+                          handleClinicRequestResponse(
+                            request.partnership.id,
+                            "approved"
+                          )
+                        }
+                        className="bg-green-600 hover:bg-green-700">
+                        <Check className="h-4 w-4 mr-1" />
+                        Aprovar
+                      </Button>
+                    </CardFooter>
+                  )}
+                </Card>
+              ))}
+
+            {!!clinic &&
+              !isProfessionalsLoading &&
+              !isPartnersLoading &&
+              filteredProfessionalsPartners.length === 0 && (
+                <div className="col-span-full p-8 text-center text-gray-500 border rounded-lg bg-gray-50">
+                  Nenhuma solicitação de parceria encontrada.
+                </div>
+              )}
+            {!!professional &&
+              !isClinicsLoading &&
+              !isPartnersLoading &&
+              filteredClinicsPartners.length === 0 && (
+                <div className="col-span-full p-8 text-center text-gray-500 border rounded-lg bg-gray-50">
+                  Nenhuma solicitação de parceria encontrada.
+                </div>
+              )}
           </div>
         </TabsContent>
 
@@ -569,23 +837,25 @@ const Partners = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {!!clinic &&
               filteredProfessionalsPartners.map((partner) => (
-                <Card key={partner.id}>
+                <Card key={partner.partnership.id}>
                   <CardHeader className="pb-2">
                     <div className="flex items-center space-x-3">
                       <Avatar className="h-12 w-12">
                         <AvatarImage
-                          src={partner.perfilImage}
-                          alt={partner.name}
+                          src={partner.professional?.perfilImage}
+                          alt={partner.professional?.name}
                         />
                         <AvatarFallback>
-                          {getInitials(partner.name)}
+                          {getInitials(partner.professional?.name || "?")}
                         </AvatarFallback>
                       </Avatar>
                       <div>
                         <CardTitle className="text-lg">
-                          {partner.name}
+                          {partner.professional?.name}
                         </CardTitle>
-                        <CardDescription>{partner.specialty}</CardDescription>
+                        <CardDescription>
+                          {partner.professional?.specialty}
+                        </CardDescription>
                       </div>
                     </div>
                   </CardHeader>
@@ -593,15 +863,15 @@ const Partners = () => {
                     <div className="space-y-2 text-sm text-gray-600">
                       <div className="flex items-center">
                         <Mail className="h-4 w-4 mr-2" />
-                        {partner.email}
+                        {partner.professional?.email}
                       </div>
                       <div className="flex items-center">
                         <Phone className="h-4 w-4 mr-2" />
-                        {partner.phone}
+                        {partner.professional?.phone}
                       </div>
                       <div className="flex items-center">
                         <BadgeIcon className="h-4 w-4 mr-2" />
-                        {partner.registrationNumber}
+                        {partner.professional?.registrationNumber}
                       </div>
                     </div>
                     <Badge
@@ -614,7 +884,9 @@ const Partners = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleRemovePartner(partner.id)}
+                      onClick={() =>
+                        handleRemovePartner(partner.partnership.id)
+                      }
                       className="w-full text-red-600 hover:text-red-700 hover:bg-red-50">
                       <X className="h-4 w-4 mr-2" />
                       Remover Parceria
@@ -625,24 +897,24 @@ const Partners = () => {
 
             {!!professional &&
               filteredClinicsPartners.map((partner) => (
-                <Card key={partner.id}>
+                <Card key={partner.partnership.id}>
                   <CardHeader className="pb-2">
                     <div className="flex items-center space-x-3">
                       <Avatar className="h-12 w-12">
                         <AvatarImage
-                          src={partner.logo}
-                          alt={partner.fantasyName}
+                          src={partner.clinic?.logo}
+                          alt={partner.clinic?.fantasyName}
                         />
                         <AvatarFallback>
-                          {getInitials(partner.fantasyName)}
+                          {getInitials(partner.clinic?.fantasyName || "?")}
                         </AvatarFallback>
                       </Avatar>
                       <div>
                         <CardTitle className="text-lg">
-                          {partner.fantasyName}
+                          {partner.clinic?.fantasyName}
                         </CardTitle>
                         <CardDescription>
-                          {partner.address?.city}
+                          {partner.clinic?.address?.city}
                         </CardDescription>
                       </div>
                     </div>
@@ -651,15 +923,15 @@ const Partners = () => {
                     <div className="space-y-2 text-sm text-gray-600">
                       <div className="flex items-center">
                         <Mail className="h-4 w-4 mr-2" />
-                        {partner.email}
+                        {partner.clinic?.email}
                       </div>
                       <div className="flex items-center">
                         <Phone className="h-4 w-4 mr-2" />
-                        {partner.phone}
+                        {partner.clinic?.phone}
                       </div>
                       <div className="flex items-center">
                         <BadgeIcon className="h-4 w-4 mr-2" />
-                        {partner.cnpj}
+                        {partner.clinic?.cnpj}
                       </div>
                     </div>
                     <Badge
@@ -672,7 +944,9 @@ const Partners = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleRemovePartner(partner.id)}
+                      onClick={() =>
+                        handleRemovePartner(partner.partnership.id)
+                      }
                       className="w-full text-red-600 hover:text-red-700 hover:bg-red-50">
                       <X className="h-4 w-4 mr-2" />
                       Remover Parceria

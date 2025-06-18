@@ -158,3 +158,15 @@ export interface SearchParams {
   professionalId?: string;
   clinicId?: string;
 }
+
+export interface PartnershipRequest {
+  id: string;
+  clinicId: string;
+  professionalId: string;
+  clinic: Clinic;
+  clinicApproved: "pending" | "approved" | "rejected";
+  professionalApproved: "pending" | "approved" | "rejected";
+  message: string;
+  createdAt: string;
+  updatedAt: string;
+}

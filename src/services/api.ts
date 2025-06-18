@@ -6,6 +6,13 @@ class ApiClient {
   private ws: WebSocket | null = null;
   private messageHandlers: Map<string, (data: any) => void> = new Map();
   private setShowConnectionTrouble?: (value: boolean) => void;
+  private logout?: () => void;
+  private redirectToLogin?: () => void;
+
+  setLogoutHandler(logout: () => void, redirectToLogin: () => void) {
+    this.logout = logout;
+    this.redirectToLogin = redirectToLogin;
+  }
 
   setConnectionTroubleHandler(handler: (value: boolean) => void) {
     this.setShowConnectionTrouble = handler;
@@ -77,6 +84,8 @@ class ApiClient {
       if (!response.ok) {
         if (response.status === 401) {
           this.clearToken();
+          this.logout?.();
+          this.redirectToLogin?.();
           throw new Error("Unauthorized");
         }
         const error = await response.json();
@@ -190,6 +199,35 @@ class ApiClient {
     });
   }
 
+  // Professionals
+  async getProfessionals() {
+    return this.request<any[]>("/professionals");
+  }
+
+  async getProfessionalById(id: string) {
+    return this.request<any>(`/professionals/${id}`);
+  }
+
+  async createProfessionals(data: any) {
+    return this.request<any>("/professionals", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateProfessionals(id: string, data: any) {
+    return this.request<any>(`/professionals/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteProfessionals(id: string) {
+    return this.request<void>(`/professionals/${id}`, {
+      method: "DELETE",
+    });
+  }
+
   // Services
   async getServices() {
     return this.request<any[]>("/services");
@@ -283,23 +321,12 @@ class ApiClient {
   }
 
   // Partners
-  async getAvailableProfessionals() {
-    return this.request<any[]>("/professionals");
-  }
-
-  async getAvailableClinics() {
-    return this.request<any[]>("/clinics");
-  }
-
-  async getPartnershipRequests() {
-    return this.request<any[]>("/partners/requests");
-  }
-
-  async getClinicsPartners() {
-    return this.request<any[]>("/partners/clinics");
-  }
-  async getProfessionalsPartners() {
+  async getPartnershipsProfessionalsList() {
     return this.request<any[]>("/partners/professionals");
+  }
+
+  async getPartnershipsClinicsList() {
+    return this.request<any[]>("/partners/clinics");
   }
 
   async sendPartnershipRequest(data: any) {
@@ -309,10 +336,23 @@ class ApiClient {
     });
   }
 
-  async respondToPartnershipRequest(requestId: string, status: string) {
-    return this.request<any>(`/partnership-requests/${requestId}/respond`, {
+  async respondToClinicPartnershipRequest(
+    requestId: string,
+    professionalApproved: string
+  ) {
+    return this.request<any>(`/partners/clinic/respond/${requestId}`, {
       method: "PATCH",
-      body: JSON.stringify({ status }),
+      body: JSON.stringify({ professionalApproved }),
+    });
+  }
+
+  async respondToProfessionalPartnershipRequest(
+    requestId: string,
+    clinicApproved: string
+  ) {
+    return this.request<any>(`/partners/professional/respond/${requestId}`, {
+      method: "PATCH",
+      body: JSON.stringify({ clinicApproved }),
     });
   }
 

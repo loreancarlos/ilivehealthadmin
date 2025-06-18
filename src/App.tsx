@@ -18,10 +18,16 @@ import Sidebar from "./components/layout/Sidebar";
 import Header from "./components/layout/Header";
 import { useEffect, useState } from "react";
 import { useAuthStore } from "./store/authStore";
+import { api } from "./services/api";
 
 function AppContent() {
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
+  const logout = useAuthStore((state) => state.logout);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    api.setLogoutHandler(logout, () => setLocation("/"));
+  }, [logout, setLocation]);
 
   // Don't render layout for login page
   if (location === "/") {
