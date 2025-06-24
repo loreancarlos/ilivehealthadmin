@@ -55,6 +55,7 @@ import { Clinic, Professional } from "../types";
 import { useAuthStore } from "../store/authStore";
 import { useClinicStore } from "../store/clinicStore";
 import { useProfessionalStore } from "../store/professionalStore";
+import { Switch } from "../components/ui/switch";
 
 const partnershipRequestSchema = z.object({
   message: z.string().min(10, {
@@ -75,6 +76,7 @@ const Partners = () => {
     sendPartnershipRequest,
     respondToClinicPartnershipRequest,
     respondToProfessionalPartnershipRequest,
+    toggleStatus,
     removePartner,
   } = usePartnersStore();
 
@@ -93,6 +95,7 @@ const Partners = () => {
   const [selectedClinic, setSelectedClinic] = useState<Clinic | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("available");
+  const [isActiveState, setIsActiveState] = useState(false);
 
   const form = useForm<PartnershipRequestValues>({
     resolver: zodResolver(partnershipRequestSchema),
@@ -103,9 +106,10 @@ const Partners = () => {
 
   useEffect(() => {
     !!clinic && fetchProfessionalsPartnerships();
+    !!clinic && fetchProfessionals();
+
     !!professional && fetchClinicsPartnerships();
-    fetchClinics();
-    fetchProfessionals();
+    !!professional && fetchClinics();
   }, [clinic, professional]);
 
   useEffect(() => {
@@ -193,6 +197,14 @@ const Partners = () => {
       } catch (error) {
         console.error("Erro ao remover parceiro:", error);
       }
+    }
+  };
+
+  const handleToggle = async (id: string) => {
+    try {
+      await toggleStatus(id);
+    } catch (e) {
+      console.error(e);
     }
   };
 
@@ -375,34 +387,35 @@ const Partners = () => {
       .substring(0, 2);
   };
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "pending":
-        return (
-          <Badge
-            variant="outline"
-            className="bg-yellow-50 text-yellow-700 border-yellow-200">
-            Pendente
-          </Badge>
-        );
-      case "approved":
-        return (
-          <Badge
-            variant="outline"
-            className="bg-green-50 text-green-700 border-green-200">
-            Aprovado
-          </Badge>
-        );
-      case "rejected":
-        return (
-          <Badge
-            variant="outline"
-            className="bg-red-50 text-red-700 border-red-200">
-            Rejeitado
-          </Badge>
-        );
-      default:
-        return <Badge variant="outline">{status}</Badge>;
+  const getStatusBadge = (status1: string, status2: string) => {
+    if (status1 === "rejected" || status2 === "rejected") {
+      return (
+        <Badge
+          variant="outline"
+          className="bg-red-50 text-red-700 border-red-200">
+          Rejeitado
+        </Badge>
+      );
+    }
+
+    if (status1 === "pending" || status2 === "pending") {
+      return (
+        <Badge
+          variant="outline"
+          className="bg-yellow-50 text-yellow-700 border-yellow-200">
+          Pendente
+        </Badge>
+      );
+    }
+
+    if (status1 === "approved" && status2 === "approved") {
+      return (
+        <Badge
+          variant="outline"
+          className="bg-green-50 text-green-700 border-green-200">
+          Aprovado
+        </Badge>
+      );
     }
   };
 
@@ -703,7 +716,7 @@ const Partners = () => {
         </TabsContent>
 
         <TabsContent value="requests" className="mt-4">
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {!!clinic &&
               filteredPendingProfessionals.map((request) => (
                 <Card key={request.partnership.id}>
@@ -728,7 +741,10 @@ const Partners = () => {
                           </CardDescription>
                         </div>
                       </div>
-                      {getStatusBadge(request.partnership.professionalApproved)}
+                      {getStatusBadge(
+                        request.partnership.professionalApproved,
+                        request.partnership.clinicApproved
+                      )}
                     </div>
                   </CardHeader>
                   <CardContent>
@@ -797,7 +813,10 @@ const Partners = () => {
                           </CardDescription>
                         </div>
                       </div>
-                      {getStatusBadge(request.partnership.clinicApproved)}
+                      {getStatusBadge(
+                        request.partnership.professionalApproved,
+                        request.partnership.clinicApproved
+                      )}
                     </div>
                   </CardHeader>
                   <CardContent>
@@ -845,7 +864,7 @@ const Partners = () => {
             {!!clinic &&
               !isProfessionalsLoading &&
               !isPartnersLoading &&
-              filteredProfessionalsPartners.length === 0 && (
+              filteredPendingProfessionals.length === 0 && (
                 <div className="col-span-full p-8 text-center text-gray-500 border rounded-lg bg-gray-50">
                   Nenhuma solicitação de parceria encontrada.
                 </div>
@@ -853,7 +872,7 @@ const Partners = () => {
             {!!professional &&
               !isClinicsLoading &&
               !isPartnersLoading &&
-              filteredClinicsPartners.length === 0 && (
+              filteredPendingClinics.length === 0 && (
                 <div className="col-span-full p-8 text-center text-gray-500 border rounded-lg bg-gray-50">
                   Nenhuma solicitação de parceria encontrada.
                 </div>
@@ -866,25 +885,31 @@ const Partners = () => {
             {!!clinic &&
               filteredProfessionalsPartners.map((partner) => (
                 <Card key={partner.partnership.id}>
-                  <CardHeader className="pb-2">
-                    <div className="flex items-center space-x-3">
-                      <Avatar className="h-12 w-12">
-                        <AvatarImage
-                          src={partner.professional?.perfilImage}
-                          alt={partner.professional?.name}
-                        />
-                        <AvatarFallback>
-                          {getInitials(partner.professional?.name || "?")}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <CardTitle className="text-lg">
-                          {partner.professional?.name}
-                        </CardTitle>
-                        <CardDescription>
-                          {partner.professional?.specialty}
-                        </CardDescription>
+                  <CardHeader>
+                    <div className="flex justify-between items-start">
+                      <div className="flex items-center space-x-3">
+                        <Avatar className="h-12 w-12">
+                          <AvatarImage
+                            src={partner.professional?.perfilImage}
+                            alt={partner.professional?.name}
+                          />
+                          <AvatarFallback>
+                            {getInitials(partner.professional?.name || "?")}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <CardTitle className="text-lg">
+                            {partner.professional?.name}
+                          </CardTitle>
+                          <CardDescription>
+                            {partner.professional?.specialty}
+                          </CardDescription>
+                        </div>
                       </div>
+                      {getStatusBadge(
+                        partner.partnership.professionalApproved,
+                        partner.partnership.clinicApproved
+                      )}
                     </div>
                   </CardHeader>
                   <CardContent className="py-2">
@@ -899,16 +924,26 @@ const Partners = () => {
                       </div>
                       <div className="flex items-center">
                         <BadgeIcon className="h-4 w-4 mr-2" />
-                        {partner.professional?.registrationNumber}
+                        {partner.professional?.registrationNumber
+                          ? partner.professional?.nameOfRegistration +
+                            " " +
+                            partner.professional?.registrationNumber
+                          : "Sem registro ou certificação"}
                       </div>
                     </div>
-                    <Badge
-                      variant="outline"
-                      className="mt-2 bg-green-50 text-green-700 border-green-200">
-                      Parceiro Ativo
-                    </Badge>
                   </CardContent>
-                  <CardFooter>
+                  <CardFooter className="grid grid-rows-2 gap-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Status da parceria
+                      </span>
+                      <Switch
+                        checked={partner.partnership.isActive}
+                        onCheckedChange={() => {
+                          handleToggle(partner.partnership.id);
+                        }}
+                      />
+                    </div>
                     <Button
                       variant="outline"
                       size="sm"
@@ -926,25 +961,31 @@ const Partners = () => {
             {!!professional &&
               filteredClinicsPartners.map((partner) => (
                 <Card key={partner.partnership.id}>
-                  <CardHeader className="pb-2">
-                    <div className="flex items-center space-x-3">
-                      <Avatar className="h-12 w-12">
-                        <AvatarImage
-                          src={partner.clinic?.logo}
-                          alt={partner.clinic?.fantasyName}
-                        />
-                        <AvatarFallback>
-                          {getInitials(partner.clinic?.fantasyName || "?")}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <CardTitle className="text-lg">
-                          {partner.clinic?.fantasyName}
-                        </CardTitle>
-                        <CardDescription>
-                          {partner.clinic?.address?.city}
-                        </CardDescription>
+                  <CardHeader>
+                    <div className="flex justify-between items-start">
+                      <div className="flex items-center space-x-3">
+                        <Avatar className="h-12 w-12">
+                          <AvatarImage
+                            src={partner.clinic?.logo}
+                            alt={partner.clinic?.fantasyName}
+                          />
+                          <AvatarFallback>
+                            {getInitials(partner.clinic?.fantasyName || "?")}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <CardTitle className="text-lg">
+                            {partner.clinic?.fantasyName}
+                          </CardTitle>
+                          <CardDescription>
+                            {partner.clinic?.address?.city}
+                          </CardDescription>
+                        </div>
                       </div>
+                      {getStatusBadge(
+                        partner.partnership.professionalApproved,
+                        partner.partnership.clinicApproved
+                      )}
                     </div>
                   </CardHeader>
                   <CardContent className="py-2">
@@ -962,13 +1003,19 @@ const Partners = () => {
                         {partner.clinic?.cnpj}
                       </div>
                     </div>
-                    <Badge
-                      variant="outline"
-                      className="mt-2 bg-green-50 text-green-700 border-green-200">
-                      Parceiro Ativo
-                    </Badge>
                   </CardContent>
-                  <CardFooter>
+                  <CardFooter className="grid grid-rows-2 gap-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Status da parceria
+                      </span>
+                      <Switch
+                        checked={partner.partnership.isActive}
+                        onCheckedChange={() => {
+                          handleToggle(partner.partnership.id);
+                        }}
+                      />
+                    </div>
                     <Button
                       variant="outline"
                       size="sm"

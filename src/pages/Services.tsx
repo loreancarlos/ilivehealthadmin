@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Search,
   Filter,
@@ -53,12 +53,19 @@ import {
   TabsList,
   TabsTrigger,
 } from "../components/ui/tabs";
-import { Service, ServiceCategory } from "../types";
+import { Service } from "../types";
 import { formatCurrency } from "../lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { useServicesStore } from "../store/servicesStore";
+import { useServiceStore } from "../store/serviceStore";
+import { usePartnersStore } from "../store/partnersStore";
 import * as z from "zod";
+import { useCategoryStore } from "../store/categoryStore";
+import { useAuthStore } from "../store/authStore";
+import { useProfessionalStore } from "../store/professionalStore";
+import { useClinicStore } from "../store/clinicStore";
+import { useSpecialtyStore } from "../store/specialtyStore";
+import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
 
 // Form schema for service
 const serviceFormSchema = z.object({
@@ -71,19 +78,20 @@ const serviceFormSchema = z.object({
   price: z.coerce.number().min(0, {
     message: "O preço não pode ser negativo.",
   }),
-  duration: z.string().min(2, {
-    message: "A duração deve ser especificada.",
+  durationInMinutes: z.coerce.number().min(0, {
+    message: "A duração não pode ser negativa.",
   }),
-  category: z.string({
+  categoryId: z.string({
     required_error: "Selecione uma categoria.",
   }),
-  active: z.boolean().default(true),
+  professionalId: z.string().optional(),
+  clinicId: z.string(),
+  specialtyId: z.string().optional(),
+  isActive: z.boolean().default(false),
   tags: z.string().optional(),
 });
 
 type ServiceFormValues = z.infer<typeof serviceFormSchema>;
-
-
 
 const Services = () => {
   const [isOpenDialog, setIsOpenDialog] = useState(false);
@@ -92,20 +100,48 @@ const Services = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
+  const { clinic, professional } = useAuthStore();
   const {
-    services: servicesData,
-    categories: categoriesData,
+    professionals,
+    fetchProfessionals,
+    isProfessionalsLoading,
+    professionalsError,
+  } = useProfessionalStore();
+  const { clinics, fetchClinics, isClinicsLoading, clinicsError } =
+    useClinicStore();
+  const {
+    services,
     isLoading,
+    toggleServiceStatus,
     fetchServices,
-    fetchCategories,
     createService,
     updateService,
     deleteService,
-  } = useServicesStore();
+  } = useServiceStore();
+  const { categories, fetchCategories } = useCategoryStore();
+  const {
+    specialties,
+    professionalSpecialties,
+    fetchSpecialties,
+    fetchProfessionalSpecialties,
+  } = useSpecialtyStore();
+  const {
+    partnerships,
+    fetchClinicsPartnerships,
+    fetchProfessionalsPartnerships,
+  } = usePartnersStore();
 
   useEffect(() => {
     fetchServices();
     fetchCategories();
+    fetchSpecialties();
+
+    !!clinic && fetchProfessionals();
+    !!clinic && fetchProfessionalsPartnerships();
+
+    !!professional && fetchProfessionalSpecialties(professional?.id);
+    !!professional && fetchClinics();
+    !!professional && fetchClinicsPartnerships();
   }, [fetchServices, fetchCategories]);
 
   const form = useForm<ServiceFormValues>({
@@ -114,12 +150,23 @@ const Services = () => {
       name: "",
       description: "",
       price: 0,
-      duration: "",
-      category: "",
-      active: true,
-      tags: "",
+      durationInMinutes: 0,
+      categoryId: "",
+      professionalId: !!professional ? professional.id : "",
+      clinicId: !!clinic ? clinic.id : "",
+      specialtyId: "",
+      isActive: false,
+      /* tags: "", */
     },
   });
+
+  const selectedProfessional = form.watch("professionalId");
+
+  useEffect(() => {
+    if (selectedProfessional) {
+      fetchProfessionalSpecialties(selectedProfessional);
+    }
+  }, [selectedProfessional]);
 
   const onSubmit = async (data: ServiceFormValues) => {
     try {
@@ -129,11 +176,8 @@ const Services = () => {
         : [];
 
       // Create service object
-      const serviceData = {
-        ...data,
-        tags: tagsArray,
-      };
-
+      const serviceData = data;
+      console.log(serviceData);
       if (editingService) {
         await updateService(editingService.id, serviceData);
       } else {
@@ -153,17 +197,20 @@ const Services = () => {
     setEditingService(service);
 
     // Prepare tags string from array
-    const tagsString = service.tags.join(", ");
+    /* const tagsString = service.tags.join(", "); */
 
     // Set form values
     form.reset({
       name: service.name,
       description: service.description,
       price: service.price,
-      duration: service.duration,
-      category: service.category,
-      active: service.active,
-      tags: tagsString,
+      durationInMinutes: service.durationInMinutes,
+      categoryId: service.categoryId,
+      professionalId: service.professionalId,
+      clinicId: service.clinicId,
+      specialtyId: service.specialtyId,
+      isActive: service.isActive,
+      /* tags: tagsString, */
     });
 
     setIsOpenDialog(true);
@@ -179,16 +226,23 @@ const Services = () => {
     }
   };
 
+  const handleToggleStatus = async (id: string) => {
+    try {
+      await toggleServiceStatus(id);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   // Function to filter services based on selected category and search query
   const getFilteredServices = () => {
-    if (!servicesData) return [];
-
-    let filtered = [...servicesData];
+    if (!services) return [];
+    let filtered = [...services];
 
     // Filter by category
     if (selectedCategory !== "all") {
       filtered = filtered.filter(
-        (service) => service.category === selectedCategory
+        (service) => service.categoryId === selectedCategory
       );
     }
 
@@ -202,13 +256,64 @@ const Services = () => {
       );
     }
 
-    return filtered;
+    return filtered
+      .map((service) => {
+        const professional = professionals.find(
+          (pro) => pro.id === service.professionalId
+        );
+        return {
+          service, // dados da solicitação (status, ids, etc.)
+          professional, // dados completos do profissional
+        };
+      })
+      .filter((item) => item.professional);
+  };
+
+  const partnershipProfessionalData = useMemo(() => {
+    return partnerships
+      .filter((p) => p.isActive)
+      .map((partnership) => {
+        const professional = professionals.find(
+          (professional) => professional.id === partnership.professionalId
+        );
+
+        return {
+          partnership, // dados da solicitação (status, ids, etc.)
+          professional, // dados completos do profissional
+        };
+      })
+      .filter((item) => item.professional); // remove casos onde a clinica não foi encontrada
+  }, [professionals, partnerships]);
+
+  const partnershipClinicData = useMemo(() => {
+    return partnerships
+      .filter((p) => p.isActive)
+      .map((partnership) => {
+        const clinic = clinics.find(
+          (clinic) => clinic.id === partnership.clinicId
+        );
+
+        return {
+          partnership, // dados da solicitação (status, ids, etc.)
+          clinic, // dados completos do profissional
+        };
+      })
+      .filter((item) => item.clinic); // remove casos onde a clinica não foi encontrada
+  }, [clinics, partnerships]);
+
+  const getInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .substring(0, 2);
   };
 
   // Function to get category name by ID
   const getCategoryName = (categoryId: string) => {
-    if (!categoriesData) return "";
-    const category = categoriesData.find((cat) => cat.id === categoryId);
+    if (!categories) return "";
+    const category = categories.find((cat) => cat.id === categoryId);
     return category ? category.name : "";
   };
 
@@ -253,7 +358,7 @@ const Services = () => {
                       <FormLabel>Nome do Serviço</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="Ex: Consulta Dermatológica"
+                          placeholder="Ex: Consulta com Dermatologista"
                           {...field}
                         />
                       </FormControl>
@@ -279,12 +384,14 @@ const Services = () => {
 
                   <FormField
                     control={form.control}
-                    name="duration"
+                    name="durationInMinutes"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Duração</FormLabel>
+                        <FormLabel>
+                          Duração <span className="text-xs">(Minutos)</span>
+                        </FormLabel>
                         <FormControl>
-                          <Input placeholder="Ex: 30 minutos" {...field} />
+                          <Input type="number" min="0" step="1" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -294,7 +401,7 @@ const Services = () => {
 
                 <FormField
                   control={form.control}
-                  name="category"
+                  name="categoryId"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Categoria</FormLabel>
@@ -308,14 +415,124 @@ const Services = () => {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {categoriesData &&
-                            categoriesData.map((category) => (
+                          {categories &&
+                            categories.map((category) => (
                               <SelectItem key={category.id} value={category.id}>
                                 {category.name}
                               </SelectItem>
                             ))}
                         </SelectContent>
                       </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {!!clinic && (
+                  <FormField
+                    control={form.control}
+                    name="professionalId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Profissional Responsável</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecione um profissional (opcional)" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {partnershipProfessionalData.length > 0 &&
+                              partnershipProfessionalData.map((partner) => (
+                                <SelectItem
+                                  key={partner.professional?.id}
+                                  value={partner.professional?.id || ""}>
+                                  {partner.professional?.name}
+                                </SelectItem>
+                              ))}
+                          </SelectContent>
+                        </Select>
+                        <FormDescription>
+                          Selecione um profissional parceiro ativo que realizará
+                          este serviço.
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
+
+                {!!professional && (
+                  <FormField
+                    control={form.control}
+                    name="clinicId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Clinicas Parceiras</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecione uma clinica (opcional)" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {partnershipClinicData.length > 0 &&
+                              partnershipClinicData.map((partner) => (
+                                <SelectItem
+                                  key={partner.clinic?.id}
+                                  value={partner.clinic?.id || ""}>
+                                  {partner.clinic?.fantasyName}
+                                </SelectItem>
+                              ))}
+                          </SelectContent>
+                        </Select>
+                        <FormDescription>
+                          Selecione uma clinica com parceria ativa onde
+                          realizará este serviço.
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
+
+                <FormField
+                  disabled={!selectedProfessional}
+                  control={form.control}
+                  name="specialtyId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Especialidade</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        value={field.value}
+                        disabled={!selectedProfessional}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione a especialidade (opcional)" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {professionalSpecialties.map((ps) => (
+                            <SelectItem
+                              key={ps?.specialtyId}
+                              value={ps?.specialtyId || ""}>
+                              {ps?.specialtyName}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormDescription>
+                        Selecione um profissional parceiro ativo que realizará
+                        este serviço.
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -339,7 +556,7 @@ const Services = () => {
                   )}
                 />
 
-                <FormField
+                {/* <FormField
                   control={form.control}
                   name="tags"
                   render={({ field }) => (
@@ -357,11 +574,11 @@ const Services = () => {
                       <FormMessage />
                     </FormItem>
                   )}
-                />
+                /> */}
 
                 <FormField
                   control={form.control}
-                  name="active"
+                  name="isActive"
                   render={({ field }) => (
                     <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
                       <div className="space-y-0.5">
@@ -422,8 +639,8 @@ const Services = () => {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todas as categorias</SelectItem>
-              {categoriesData &&
-                categoriesData.map((category) => (
+              {categories &&
+                categories.map((category) => (
                   <SelectItem key={category.id} value={category.id}>
                     {category.name}
                   </SelectItem>
@@ -482,66 +699,90 @@ const Services = () => {
         <>
           {viewMode === "grid" ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {getFilteredServices().map((service) => (
+              {getFilteredServices().map((data) => (
                 <Card
-                  key={service.id}
-                  className={!service.active ? "opacity-70" : ""}>
+                  key={data.service.id}
+                  className={!data.service.isActive ? "opacity-70" : ""}>
                   <CardHeader className="pb-2">
                     <div className="flex justify-between items-start">
                       <div>
-                        <CardTitle className="text-lg">
-                          {service.name}
+                        <CardTitle className="text-xl">
+                          {data.service.name}
                         </CardTitle>
                         <CardDescription className="mt-1">
                           <Badge variant="outline" className="mr-1">
-                            {getCategoryName(service.category)}
+                            {getCategoryName(data.service.categoryId)}
                           </Badge>
-                          {!service.active && (
-                            <Badge variant="outline" className="bg-gray-100">
-                              Inativo
-                            </Badge>
-                          )}
                         </CardDescription>
                       </div>
-                      <div className="text-xl font-bold text-primary">
-                        {formatCurrency(service.price)}
+                      <div className="flex flex-col font-bold ">
+                        <div className="flex justify-center">
+                          <Avatar className="h-12 w-12">
+                            <AvatarImage
+                              src={data.professional?.perfilImage}
+                              alt={data.professional?.name}
+                            />
+                            <AvatarFallback>
+                              {getInitials(data.professional?.name || "?")}
+                            </AvatarFallback>
+                          </Avatar>
+                        </div>
+                        <span className="text-lg">{data.professional?.name}</span>
+                        <span className="text-xl text-primary">
+                          {formatCurrency(data.service.price)}
+                        </span>
                       </div>
                     </div>
                   </CardHeader>
                   <CardContent className="py-2">
                     <div className="flex items-center text-sm text-gray-500 mb-2">
                       <Clock className="h-4 w-4 mr-1" />
-                      {service.duration}
+                      {data.service.durationInMinutes + " minutos"}
                     </div>
                     <p className="text-sm text-gray-700 line-clamp-2">
-                      {service.description}
+                      {data.service.description}
                     </p>
                     <div className="mt-3 flex flex-wrap gap-1">
-                      {service.tags.map((tag, index) => (
+                      {/* {data.service.tags.map((tag, index) => (
                         <Badge
                           key={index}
                           variant="secondary"
                           className="text-xs">
                           {tag}
                         </Badge>
-                      ))}
+                      ))} */}
                     </div>
                   </CardContent>
-                  <CardFooter className="flex justify-end gap-2 pt-1">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDeleteService(service.id)}
-                      className="text-red-500 hover:text-red-700 hover:bg-red-50">
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleEditService(service)}
-                      className="text-primary hover:text-primary/80 hover:bg-primary/10">
-                      <Edit className="h-4 w-4" />
-                    </Button>
+                  <CardFooter className="flex justify-between gap-2 pt-1">
+                    <div className="grid grid-rows-2">
+                      <div className="flex items-center justify-between gap-4">
+                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Status do Serviço
+                        </span>
+                        <Switch
+                          checked={data.service.isActive}
+                          onCheckedChange={() => {
+                            handleToggleStatus(data.service.id);
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeleteService(data.service.id)}
+                        className="text-red-500 hover:text-red-700 hover:bg-red-50">
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleEditService(data.service)}
+                        className="text-primary hover:text-primary/80 hover:bg-primary/10">
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </CardFooter>
                 </Card>
               ))}
@@ -561,6 +802,9 @@ const Services = () => {
                       Nome
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                      Profissional
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                       Categoria
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
@@ -578,21 +822,23 @@ const Services = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {getFilteredServices().map((service) => (
+                  {getFilteredServices().map((data) => (
                     <tr
-                      key={service.id}
+                      key={data.service.id}
                       className={
-                        !service.active ? "bg-gray-50" : "hover:bg-gray-50"
+                        !data.service.isActive
+                          ? "bg-gray-50"
+                          : "hover:bg-gray-50"
                       }>
                       <td className="px-4 py-4">
                         <div className="text-sm font-medium text-gray-900">
-                          {service.name}
+                          {data.service.name}
                         </div>
                         <div className="text-xs text-gray-500 line-clamp-1">
-                          {service.description}
+                          {data.service.description}
                         </div>
                         <div className="mt-1 flex flex-wrap gap-1">
-                          {service.tags.slice(0, 2).map((tag, index) => (
+                          {/*  {data.service.tags.slice(0, 2).map((tag, index) => (
                             <Badge
                               key={index}
                               variant="secondary"
@@ -600,50 +846,55 @@ const Services = () => {
                               {tag}
                             </Badge>
                           ))}
-                          {service.tags.length > 2 && (
+                          {data.service.tags.length > 2 && (
                             <Badge variant="outline" className="text-xs">
-                              +{service.tags.length - 2}
+                              +{data.service.tags.length - 2}
                             </Badge>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-4 py-4">
-                        <div className="text-sm text-gray-900">
-                          {getCategoryName(service.category)}
-                        </div>
-                      </td>
-                      <td className="px-4 py-4">
-                        <div className="text-sm text-gray-900">
-                          {service.duration}
+                          )} */}
                         </div>
                       </td>
                       <td className="px-4 py-4">
                         <div className="text-sm font-medium text-gray-900">
-                          {formatCurrency(service.price)}
+                          {data.professional?.name}
+                        </div>
+                      </td>
+                      <td className="px-4 py-4">
+                        <div className="text-sm text-gray-900">
+                          {getCategoryName(data.service.categoryId)}
+                        </div>
+                      </td>
+                      <td className="px-4 py-4">
+                        <div className="text-sm text-gray-900">
+                          {data.service.durationInMinutes + " min."}
+                        </div>
+                      </td>
+                      <td className="px-4 py-4">
+                        <div className="text-sm font-medium text-gray-900">
+                          {formatCurrency(data.service.price)}
                         </div>
                       </td>
                       <td className="px-4 py-4">
                         <div
                           className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                            service.active
+                            data.service.isActive
                               ? "bg-green-100 text-green-800"
                               : "bg-gray-100 text-gray-800"
                           }`}>
-                          {service.active ? "Ativo" : "Inativo"}
+                          {data.service.isActive ? "Ativo" : "Inativo"}
                         </div>
                       </td>
                       <td className="px-4 py-4 text-right space-x-2">
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleEditService(service)}
+                          onClick={() => handleEditService(data.service)}
                           className="text-primary hover:text-primary/80 hover:bg-primary/10">
                           <Edit className="h-4 w-4" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleDeleteService(service.id)}
+                          onClick={() => handleDeleteService(data.service.id)}
                           className="text-red-500 hover:text-red-700 hover:bg-red-50">
                           <Trash2 className="h-4 w-4" />
                         </Button>

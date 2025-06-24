@@ -228,13 +228,29 @@ class ApiClient {
     });
   }
 
+  //Categories
+
+  async getCategories() {
+    return this.request<any[]>("/categories");
+  }
+
+  //Specialties
+
+  async getSpecialties() {
+    return this.request<any[]>("/specialties");
+  }
+
+  //ProfessionalSpecialties
+
+  async getProfessionalSpecialties(id: string) {
+    return this.request<any[]>(`/professionalSpecialties/${id}`, {
+      method: "POST",
+    });
+  }
+
   // Services
   async getServices() {
     return this.request<any[]>("/services");
-  }
-
-  async getServiceCategories() {
-    return this.request<any[]>("/service-categories");
   }
 
   async createService(data: any) {
@@ -257,8 +273,14 @@ class ApiClient {
     });
   }
 
+  async toggleIsPromotionOn(id: string) {
+    return this.request<any>(`/services/${id}/toggleIsPromotionOn`, {
+      method: "PATCH",
+    });
+  }
+
   async toggleServiceStatus(id: string) {
-    return this.request<any>(`/services/${id}/toggle-status`, {
+    return this.request<any>(`/services/${id}/toggleStatus`, {
       method: "PATCH",
     });
   }
@@ -353,6 +375,12 @@ class ApiClient {
     return this.request<any>(`/partners/professional/respond/${requestId}`, {
       method: "PATCH",
       body: JSON.stringify({ clinicApproved }),
+    });
+  }
+
+  async togglePartnershipStatus(partnershipId: string) {
+    return this.request<any>(`/partners/${partnershipId}/toggleStatus`, {
+      method: "PATCH",
     });
   }
 

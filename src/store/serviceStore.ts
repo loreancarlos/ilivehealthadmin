@@ -1,26 +1,22 @@
-
 import { create } from "zustand";
 import { api } from "../services/api";
-import { Service, ServiceCategory } from "../types";
+import { Service } from "../types";
 
-interface ServicesState {
+interface ServiceState {
   services: Service[];
-  categories: ServiceCategory[];
   isLoading: boolean;
   error: string | null;
-  
+
   // Actions
   fetchServices: () => Promise<void>;
-  fetchCategories: () => Promise<void>;
-  createService: (serviceData: Omit<Service, 'id'>) => Promise<void>;
+  createService: (serviceData: Omit<Service, "id">) => Promise<void>;
   updateService: (id: string, serviceData: Partial<Service>) => Promise<void>;
   deleteService: (id: string) => Promise<void>;
   toggleServiceStatus: (id: string) => Promise<void>;
 }
 
-export const useServicesStore = create<ServicesState>((set, get) => ({
+export const useServiceStore = create<ServiceState>((set, get) => ({
   services: [],
-  categories: [],
   isLoading: false,
   error: null,
 
@@ -34,23 +30,13 @@ export const useServicesStore = create<ServicesState>((set, get) => ({
     }
   },
 
-  fetchCategories: async () => {
-    set({ isLoading: true, error: null });
-    try {
-      const categories = await api.getServiceCategories();
-      set({ categories, isLoading: false });
-    } catch (error) {
-      set({ error: error.message, isLoading: false });
-    }
-  },
-
   createService: async (serviceData) => {
     set({ isLoading: true, error: null });
     try {
       const newService = await api.createService(serviceData);
-      set(state => ({
+      set((state) => ({
         services: [...state.services, newService],
-        isLoading: false
+        isLoading: false,
       }));
     } catch (error) {
       set({ error: error.message, isLoading: false });
@@ -62,11 +48,11 @@ export const useServicesStore = create<ServicesState>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const updatedService = await api.updateService(id, serviceData);
-      set(state => ({
-        services: state.services.map(service =>
+      set((state) => ({
+        services: state.services.map((service) =>
           service.id === id ? updatedService : service
         ),
-        isLoading: false
+        isLoading: false,
       }));
     } catch (error) {
       set({ error: error.message, isLoading: false });
@@ -78,9 +64,9 @@ export const useServicesStore = create<ServicesState>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       await api.deleteService(id);
-      set(state => ({
-        services: state.services.filter(service => service.id !== id),
-        isLoading: false
+      set((state) => ({
+        services: state.services.filter((service) => service.id !== id),
+        isLoading: false,
       }));
     } catch (error) {
       set({ error: error.message, isLoading: false });
@@ -89,14 +75,13 @@ export const useServicesStore = create<ServicesState>((set, get) => ({
   },
 
   toggleServiceStatus: async (id) => {
-    set({ isLoading: true, error: null });
+    set({ error: null });
     try {
       const updatedService = await api.toggleServiceStatus(id);
-      set(state => ({
-        services: state.services.map(service =>
+      set((state) => ({
+        services: state.services.map((service) =>
           service.id === id ? updatedService : service
         ),
-        isLoading: false
       }));
     } catch (error) {
       set({ error: error.message, isLoading: false });

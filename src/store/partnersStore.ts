@@ -19,6 +19,7 @@ interface PartnersState {
     requestId: string,
     clinicApproved: "approved" | "rejected"
   ) => Promise<void>;
+  toggleStatus: (partnershipId: string) => Promise<void>;
   removePartner: (professionalId: string) => Promise<void>;
 }
 
@@ -78,12 +79,6 @@ export const usePartnersStore = create<PartnersState>((set, get) => ({
         ),
         isPartnersLoading: false,
       }));
-      /* 
-      // If approved, add to partners
-
-      if (professionalApproved === "approved") {
-        get().fetchPartnerships();
-      } */
     } catch (error) {
       set({ partnersError: error.message, isPartnersLoading: false });
       throw error;
@@ -107,12 +102,24 @@ export const usePartnersStore = create<PartnersState>((set, get) => ({
         ),
         isPartnersLoading: false,
       }));
+    } catch (error) {
+      set({ partnersError: error.message, isPartnersLoading: false });
+      throw error;
+    }
+  },
 
-      /*   // If approved, add to partners
-
-      if (status === "approved") {
-        get().fetchPartnerships();
-      } */
+  toggleStatus: async (partnershipId) => {
+    set({ isPartnersLoading: true, partnersError: null });
+    try {
+      const updatedPartnership = await api.togglePartnershipStatus(
+        partnershipId
+      );
+      set((state) => ({
+        partnerships: state.partnerships.map((partnership) =>
+          partnership.id === partnershipId ? updatedPartnership : partnership
+        ),
+        isPartnersLoading: false,
+      }));
     } catch (error) {
       set({ partnersError: error.message, isPartnersLoading: false });
       throw error;

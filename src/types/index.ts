@@ -89,18 +89,31 @@ export interface Service {
   name: string;
   description: string;
   price: number;
-  duration: string;
-  category: string;
+  durationInMinutes: number;
+  categoryId: string;
   professionalId: string;
   clinicId: string;
-  active: boolean;
+  specialtyId: string;
+  isActive: boolean;
   tags: string[];
 }
 
-export interface ServiceCategory {
+export interface Category {
   id: string;
   name: string;
-  slug: string;
+}
+
+export interface Specialty {
+  id: string;
+  name: string;
+}
+
+export interface ProfessionalSpecialty {
+  id: string;
+  professionalId: string;
+  specialtyId: string;
+  specialtyName: string;
+  specialtyDate: Date;
 }
 
 // Financial data types
@@ -166,6 +179,7 @@ export interface PartnershipRequest {
   clinic: Clinic;
   clinicApproved: "pending" | "approved" | "rejected";
   professionalApproved: "pending" | "approved" | "rejected";
+  isActive: boolean;
   message: string;
   createdAt: string;
   updatedAt: string;
